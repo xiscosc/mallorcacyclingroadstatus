@@ -24,4 +24,4 @@ invocation_logs = true
 enabled = false
 
 [vars]
-TURNSTILE_SITE_KEY=0x4AAAAAADCnu_c4A7KUyEUg
+TURNSTILE_SITE_KEY="0x4AAAAAADCnu_c4A7KUyEUg"
