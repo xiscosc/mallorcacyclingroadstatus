@@ -14,3 +14,11 @@ crons = ["0 */2 * * *"]
 [[r2_buckets]]
 binding = "INCIDENTS"
 bucket_name = "mallorca-cycling-incidents"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
