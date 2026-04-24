@@ -83,7 +83,7 @@
 		</div>
 
 		<div class="relative mt-6">
-			<RouteCheckMenu {checker} />
+			<RouteCheckMenu {checker} turnstileSiteKey={data.turnstileSiteKey} />
 		</div>
 	</section>
 

@@ -38,7 +38,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		}
 	}
 
-	async function loadKomoot(url: string): Promise<void> {
+	async function loadKomoot(url: string, turnstileToken: string): Promise<void> {
 		error = null;
 		track = null;
 		affected = null;
@@ -46,6 +46,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		try {
 			const form = new FormData();
 			form.set('url', url);
+			form.set('cf-turnstile-response', turnstileToken);
 			const res = await fetch('?/komoot', { method: 'POST', body: form });
 			const result = deserialize(await res.text());
 			if (result.type === 'failure') {

@@ -11,11 +11,49 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 
-	let { checker }: { checker: RouteChecker } = $props();
+	let { checker, turnstileSiteKey }: { checker: RouteChecker; turnstileSiteKey: string } = $props();
 
 	let fileInput: HTMLInputElement;
 	let komootOpen = $state(false);
 	let komootUrl = $state('');
+	let turnstileToken = $state('');
+	let turnstileContainer: HTMLDivElement | null = $state(null);
+	let widgetId: string | undefined;
+
+	function waitForTurnstile(): Promise<TurnstileWidget> {
+		return new Promise((resolve) => {
+			if (window.turnstile) return resolve(window.turnstile);
+			const iv = setInterval(() => {
+				if (window.turnstile) {
+					clearInterval(iv);
+					resolve(window.turnstile);
+				}
+			}, 50);
+		});
+	}
+
+	$effect(() => {
+		if (!komootOpen || !turnstileContainer || !turnstileSiteKey) return;
+		const container = turnstileContainer;
+		let cancelled = false;
+		waitForTurnstile().then((ts) => {
+			if (cancelled) return;
+			widgetId = ts.render(container, {
+				sitekey: turnstileSiteKey,
+				callback: (token) => (turnstileToken = token),
+				'expired-callback': () => (turnstileToken = ''),
+				'error-callback': () => (turnstileToken = '')
+			});
+		});
+		return () => {
+			cancelled = true;
+			if (widgetId && window.turnstile) {
+				window.turnstile.remove(widgetId);
+				widgetId = undefined;
+			}
+			turnstileToken = '';
+		};
+	});
 
 	function onFileChange(e: Event) {
 		const input = e.currentTarget as HTMLInputElement;
@@ -27,12 +65,19 @@
 	async function submitKomoot(e: SubmitEvent) {
 		e.preventDefault();
 		const trimmed = komootUrl.trim();
-		if (!trimmed) return;
+		if (!trimmed || !turnstileToken) return;
+		const token = turnstileToken;
 		komootOpen = false;
 		komootUrl = '';
-		await checker.loadKomoot(trimmed);
+		await checker.loadKomoot(trimmed, token);
 	}
 </script>
+
+<svelte:head>
+	{#if turnstileSiteKey}
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+	{/if}
+</svelte:head>
 
 <input
 	bind:this={fileInput}
@@ -100,13 +145,14 @@
 					autocomplete="off"
 				/>
 			</div>
+			<div bind:this={turnstileContainer}></div>
 			<Dialog.Footer>
 				<Dialog.Close>
 					{#snippet child({ props })}
 						<Button {...props} variant="ghost">Cancel</Button>
 					{/snippet}
 				</Dialog.Close>
-				<Button type="submit" disabled={!komootUrl.trim()}>Check tour</Button>
+				<Button type="submit" disabled={!komootUrl.trim() || !turnstileToken}>Check tour</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

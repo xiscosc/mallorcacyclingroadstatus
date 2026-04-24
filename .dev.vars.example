@@ -1,3 +1,7 @@
 # Local overrides for wrangler dev. Copy to `.dev.vars` (gitignored) and fill in.
 CONSELL_POINTS_URL=
 CONSELL_LINES_URL=
+# Cloudflare Turnstile keys. Use the always-passing test pair locally:
+#   https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET=
