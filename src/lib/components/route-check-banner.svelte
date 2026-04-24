@@ -1,0 +1,95 @@
+<script lang="ts">
+	import type { RouteChecker } from '$lib/route-check.svelte';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Badge } from '$lib/components/ui/badge';
+	import { DateTime } from 'luxon';
+	import CircleCheck from '@lucide/svelte/icons/circle-check';
+	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+	import Clock from '@lucide/svelte/icons/clock';
+	import X from '@lucide/svelte/icons/x';
+
+	let { checker }: { checker: RouteChecker } = $props();
+
+	const fmt = (d: Date | undefined) =>
+		d ? DateTime.fromJSDate(d).setZone('Europe/Madrid').toFormat('dd LLL HH:mm') : '—';
+	const fmtRange = (a: Date | undefined, b: Date | undefined) =>
+		!a && !b ? null : `${fmt(a)} → ${fmt(b)}`;
+</script>
+
+{#if checker.error}
+	<Alert.Root variant="destructive" class="relative pr-10">
+		<X class="size-4" />
+		<Alert.Title>Route error</Alert.Title>
+		<Alert.Description>{checker.error}</Alert.Description>
+		<button
+			type="button"
+			onclick={checker.clear}
+			aria-label="Dismiss"
+			class="absolute top-2 right-2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
+		>
+			<X class="size-3.5" />
+		</button>
+	</Alert.Root>
+{:else if checker.track && checker.affected}
+	{@const ok = checker.affected.length === 0}
+	<Alert.Root
+		class={[
+			'relative pr-10',
+			ok && 'border-emerald-500/40 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300',
+			!ok && 'border-amber-500/40 bg-amber-500/5 text-amber-800 dark:text-amber-200'
+		]}
+	>
+		{#if ok}
+			<CircleCheck class="size-4" />
+		{:else}
+			<TriangleAlert class="size-4" />
+		{/if}
+
+		<Alert.Title class="font-semibold">
+			{#if ok}
+				Your route is clear
+			{:else}
+				{checker.affected.length} incident{checker.affected.length === 1 ? '' : 's'} on your route
+			{/if}
+		</Alert.Title>
+		<Alert.Description class="opacity-80">
+			{checker.track.name ?? 'Your route'}
+		</Alert.Description>
+
+		{#if !ok}
+			<ul class="col-start-2 mt-3 flex flex-col gap-2">
+				{#each checker.affected as inc (inc.id)}
+					<li
+						class="flex flex-col gap-1.5 rounded-md border bg-background/70 px-3 py-2 text-foreground"
+					>
+						<div class="flex flex-wrap items-center gap-2">
+							<span class="font-semibold">{inc.roadName}</span>
+							<Badge variant="outline">{inc.type}</Badge>
+							{#if inc.isClosed}
+								<Badge variant="destructive">Closed</Badge>
+							{/if}
+							{#if inc.onlyClosedOnWeekDays}
+								<Badge variant="secondary">Weekdays only</Badge>
+							{/if}
+						</div>
+						{#if fmtRange(inc.startDate, inc.endDate)}
+							<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+								<Clock class="size-3" />
+								<span>{fmtRange(inc.startDate, inc.endDate)}</span>
+							</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+
+		<button
+			type="button"
+			onclick={checker.clear}
+			aria-label="Clear route"
+			class="absolute top-2 right-2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
+		>
+			<X class="size-3.5" />
+		</button>
+	</Alert.Root>
+{/if}

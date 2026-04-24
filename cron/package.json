@@ -1,0 +1,21 @@
+{
+	"name": "@mallorca/cron",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"dev:scheduled": "wrangler dev --test-scheduled",
+		"deploy": "wrangler deploy",
+		"trigger": "curl -sS http://localhost:8787",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@mallorca/incidents": "workspace:*"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20241106.0",
+		"typescript": "^6.0.2",
+		"wrangler": "^4.0.0"
+	}
+}
