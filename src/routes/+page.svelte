@@ -19,6 +19,7 @@
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Icon from '@iconify/svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -158,16 +159,29 @@
 		</Map>
 	</Card>
 
-	<footer class="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs">
-		<span>Data from</span>
+	<footer
+		class="text-muted-foreground flex flex-wrap items-center justify-between gap-3 text-xs"
+	>
+		<div class="flex flex-wrap items-center gap-1.5">
+			<span>Data from</span>
+			<a
+				href="https://www.conselldemallorca.net/"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="hover:text-foreground inline-flex items-center gap-1 underline underline-offset-2"
+			>
+				Consell de Mallorca
+				<ExternalLink class="size-3" />
+			</a>
+		</div>
 		<a
-			href="https://www.conselldemallorca.net/"
+			href="https://ko-fi.com/xiscosc"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="hover:text-foreground inline-flex items-center gap-1 underline underline-offset-2"
+			class="inline-flex items-center gap-1.5 rounded-full bg-[#ff5e5b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform hover:scale-105 hover:bg-[#ff5e5b]/90"
 		>
-			Consell de Mallorca
-			<ExternalLink class="size-3" />
+			<Icon icon="simple-icons:kofi" width="14" height="14" />
+			Buy me a coffee
 		</a>
 	</footer>
 </main>
