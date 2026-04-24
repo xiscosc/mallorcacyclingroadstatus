@@ -7,7 +7,14 @@ const config = {
 		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
 	},
 	kit: {
-		adapter: adapter()
+		adapter: adapter({
+			// Expose wrangler.toml bindings (R2, vars, secrets) to `vite dev` via
+			// event.platform. Uses the same Miniflare state `wrangler dev` uses,
+			// so `vite dev` sees whatever the cron handler wrote to R2.
+			platformProxy: {
+				persist: true
+			}
+		})
 	}
 };
 

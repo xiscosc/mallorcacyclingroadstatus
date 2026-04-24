@@ -1,0 +1,3 @@
+# Local overrides for wrangler dev. Copy to `.dev.vars` (gitignored) and fill in.
+CONSELL_POINTS_URL=
+CONSELL_LINES_URL=
