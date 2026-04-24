@@ -53,21 +53,43 @@
 			container.appendChild(wrapperElement.firstChild);
 		}
 
-		// Show on hover
-		const handleMouseEnter = () => {
+		// Desktop: hover to preview. Mobile: tap marker to pin open / tap again to close.
+		let pinned = false;
+
+		const show = () => {
 			popupInstance.setLngLat(marker.getLngLat()).addTo(map);
 		};
 
+		const handleMouseEnter = () => {
+			if (pinned) return;
+			show();
+		};
+
 		const handleMouseLeave = () => {
+			if (pinned) return;
 			popupInstance.remove();
+		};
+
+		const handleClick = (e: Event) => {
+			e.stopPropagation();
+			pinned = !pinned;
+			if (pinned) show();
+			else popupInstance.remove();
+		};
+
+		const handlePopupClose = () => {
+			pinned = false;
 		};
 
 		markerElement.addEventListener("mouseenter", handleMouseEnter);
 		markerElement.addEventListener("mouseleave", handleMouseLeave);
+		markerElement.addEventListener("click", handleClick);
+		popupInstance.on("close", handlePopupClose);
 
 		return () => {
 			markerElement.removeEventListener("mouseenter", handleMouseEnter);
 			markerElement.removeEventListener("mouseleave", handleMouseLeave);
+			markerElement.removeEventListener("click", handleClick);
 
 			// Move content back
 			while (container.firstChild) {
