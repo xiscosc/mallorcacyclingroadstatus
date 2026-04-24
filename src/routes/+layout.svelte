@@ -28,6 +28,9 @@
 	<meta name="twitter:description" content={description} />
 	<meta name="twitter:image" content={image} />
 </svelte:head>
-<div class="flex h-screen flex-col">
+<div
+	class="flex h-dvh flex-col pb-[env(safe-area-inset-bottom)]"
+	style="padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);"
+>
 	{@render children()}
 </div>

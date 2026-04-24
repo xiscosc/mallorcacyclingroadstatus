@@ -109,7 +109,7 @@
 			</Button>
 		{/snippet}
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="end" class="w-56">
+	<DropdownMenu.Content align="end" collisionPadding={16} class="w-56">
 		<DropdownMenu.Item onSelect={() => fileInput.click()}>
 			<Upload />
 			<span>Upload GPX file</span>
