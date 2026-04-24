@@ -6,12 +6,12 @@
       "name": "mallorcacyclingmap",
       "dependencies": {
         "@iconify/svelte": "^5.2.1",
-        "@mallorca/incidents": "workspace:*",
         "@tmcw/togeojson": "^7.1.2",
         "@turf/helpers": "^7.3.5",
         "@turf/point-to-line-distance": "^7.3.5",
         "luxon": "^3.7.2",
         "maplibre-gl": "^5.24.0",
+        "proj4": "^2.20.8",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^4.20241106.0",
@@ -27,6 +27,7 @@
         "@tailwindcss/vite": "^4.2.2",
         "@types/luxon": "^3.7.1",
         "@types/node": "^24",
+        "@types/proj4": "^2.19.0",
         "bits-ui": "^2.16.3",
         "clsx": "^2.1.1",
         "eslint": "^10.2.0",
@@ -47,31 +48,6 @@
         "typescript-eslint": "^8.58.1",
         "vite": "^8.0.7",
         "wrangler": "^4.0.0",
-      },
-    },
-    "cron": {
-      "name": "@mallorca/cron",
-      "version": "0.0.0",
-      "dependencies": {
-        "@mallorca/incidents": "workspace:*",
-      },
-      "devDependencies": {
-        "@cloudflare/workers-types": "^4.20241106.0",
-        "typescript": "^6.0.2",
-        "wrangler": "^4.0.0",
-      },
-    },
-    "packages/incidents": {
-      "name": "@mallorca/incidents",
-      "version": "0.0.0",
-      "dependencies": {
-        "luxon": "^3.7.2",
-        "proj4": "^2.20.8",
-      },
-      "devDependencies": {
-        "@types/luxon": "^3.7.1",
-        "@types/proj4": "^2.19.0",
-        "typescript": "^6.0.2",
       },
     },
   },
@@ -255,10 +231,6 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@lucide/svelte": ["@lucide/svelte@1.9.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-+5RmY0tqeuGGbiI2BnyDp1Ft/EP7AKReStHeFEKJ0mPcW1w51Tm41R2GvUfz0sGLJhmRhVAe2zKaTfqrcpJqqg=="],
-
-    "@mallorca/cron": ["@mallorca/cron@workspace:cron"],
-
-    "@mallorca/incidents": ["@mallorca/incidents@workspace:packages/incidents"],
 
     "@mapbox/jsonlint-lines-primitives": ["@mapbox/jsonlint-lines-primitives@2.0.2", "", {}, "sha512-rY0o9A5ECsTQRVhv7tL/OyDpGAoUB4tTvLiW1DSzQGq4bvTPhNw1VpSNjDJc5GFZ2XuyOtSWSVN05qOtcD71qQ=="],
 

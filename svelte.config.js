@@ -7,10 +7,7 @@ const config = {
 		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
 	},
 	kit: {
-		adapter: adapter(),
-		alias: {
-			'@mallorca/incidents': './packages/incidents/src/index.ts'
-		}
+		adapter: adapter()
 	}
 };
 

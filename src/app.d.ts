@@ -9,6 +9,8 @@ declare global {
 		interface Platform {
 			env: {
 				INCIDENTS: R2Bucket;
+				CONSELL_POINTS_URL: string;
+				CONSELL_LINES_URL: string;
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };

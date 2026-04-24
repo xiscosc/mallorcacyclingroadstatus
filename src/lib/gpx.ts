@@ -1,7 +1,7 @@
 import { gpx as gpxToGeoJson } from '@tmcw/togeojson';
 import pointToLineDistance from '@turf/point-to-line-distance';
 import { lineString } from '@turf/helpers';
-import type { Incident } from '@mallorca/incidents';
+import type { Incident } from '$lib/incidents';
 
 export type ParsedGpx = {
 	name?: string;

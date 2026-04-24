@@ -1,5 +1,5 @@
 import type { R2Bucket } from '@cloudflare/workers-types';
-import type { Incident } from '@mallorca/incidents';
+import type { Incident } from '$lib/incidents';
 
 const R2_KEY = 'incidents.json';
 

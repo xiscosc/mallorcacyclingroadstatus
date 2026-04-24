@@ -1,5 +1,8 @@
 import proj4 from 'proj4';
-import type { Incident, LoadOptions, ProviderContext } from './types';
+import type { Incident, LoadOptions, ProviderContext } from '$lib/incidents';
+
+export type { Incident, LoadOptions, ProviderContext } from '$lib/incidents';
+export { IncidentType } from '$lib/incidents';
 
 const UTM_31N = '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs';
 

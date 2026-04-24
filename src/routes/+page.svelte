@@ -9,7 +9,7 @@
 	} from '$lib/components/ui/map';
 	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import { IncidentType } from '@mallorca/incidents';
+	import { IncidentType } from '$lib/incidents';
 	import { theme, toggleTheme } from '$lib/theme';
 	import { createRouteChecker } from '$lib/route-check.svelte';
 	import RouteCheckMenu from '$lib/components/route-check-menu.svelte';

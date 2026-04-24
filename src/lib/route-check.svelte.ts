@@ -1,6 +1,6 @@
 import { deserialize } from '$app/forms';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
-import type { Incident } from '@mallorca/incidents';
+import type { Incident } from '$lib/incidents';
 
 /**
  * Reactive checker that takes a GPX file (soon: also a remote tour URL),

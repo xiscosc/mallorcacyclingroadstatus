@@ -1,6 +1,11 @@
 import { DateTime } from 'luxon';
-import { IncidentsProvider } from './provider';
-import { IncidentType, type Incident, type LoadOptions, type ProviderContext } from './types';
+import {
+	IncidentsProvider,
+	IncidentType,
+	type Incident,
+	type LoadOptions,
+	type ProviderContext
+} from './provider';
 
 type Restriction = {
 	codi: number;

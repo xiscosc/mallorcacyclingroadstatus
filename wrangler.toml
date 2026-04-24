@@ -2,9 +2,14 @@ name = "mallorcacyclingroadstatus"
 compatibility_date = "2025-05-01"
 compatibility_flags = ["nodejs_compat"]
 
-# adapter-cloudflare emits the built worker here.
-main = ".svelte-kit/cloudflare/_worker.js"
+# Wrapper worker at src/worker.ts re-exports adapter-cloudflare's fetch handler
+# and adds the scheduled handler, so cron + web live in a single worker.
+main = "src/worker.ts"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
+
+# Runs at minute 0 of every 2nd hour (UTC).
+[triggers]
+crons = ["0 */2 * * *"]
 
 [[r2_buckets]]
 binding = "INCIDENTS"
