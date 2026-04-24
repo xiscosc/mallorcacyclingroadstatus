@@ -1,4 +1,4 @@
-name = "mallorca-cycling-cron"
+name = "mallorcacyclingroadstatuscron"
 main = "src/index.ts"
 compatibility_date = "2025-05-01"
 
