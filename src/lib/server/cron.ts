@@ -3,6 +3,7 @@ import { ConsellDeMallorcaRoadsProvider } from '$lib/server/incidents/consell-ma
 import { IncidentsProvider } from '$lib/server/incidents/provider';
 import type { Incident } from '$lib/incidents';
 import { CYCLING_ROADS } from '$lib/cycling-roads';
+import { invalidateIncidentsCache } from '$lib/server/incidents-store';
 
 export interface CronEnv {
 	INCIDENTS: R2Bucket;
@@ -61,5 +62,6 @@ export async function runCron(env: CronEnv): Promise<CronResult> {
 	await env.INCIDENTS.put(R2_KEY, JSON.stringify({ generatedAt, incidents: all }), {
 		httpMetadata: { contentType: 'application/json; charset=utf-8' }
 	});
+	await invalidateIncidentsCache((caches as CacheStorage & { default: Cache }).default);
 	return { ok: true, count: all.length, providers: report, generatedAt };
 }

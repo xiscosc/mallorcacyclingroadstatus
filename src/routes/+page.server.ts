@@ -5,7 +5,7 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ platform }) => {
-	const incidents = await readIncidents(platform?.env.INCIDENTS);
+	const incidents = await readIncidents(platform?.env.INCIDENTS, platform?.caches.default);
 	return {
 		...incidents,
 		turnstileSiteKey: platform?.env.TURNSTILE_SITE_KEY ?? ''

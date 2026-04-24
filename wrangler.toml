@@ -7,9 +7,9 @@ compatibility_flags = ["nodejs_compat"]
 main = "src/worker.ts"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 
-# Runs at minute 0 of every 2nd hour (UTC).
+# Runs at minute 0 of every 6th hour (UTC).
 [triggers]
-crons = ["0 */2 * * *"]
+crons = ["0 */6 * * *"]
 
 [[r2_buckets]]
 binding = "INCIDENTS"
