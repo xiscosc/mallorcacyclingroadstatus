@@ -7,6 +7,10 @@ compatibility_flags = ["nodejs_compat"]
 main = "src/worker.ts"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 
+routes = [
+	{ pattern = "mallorcacyclingroads.cc", custom_domain = true }
+]
+
 # Runs at minute 0 of every 6th hour (UTC).
 [triggers]
 crons = ["0 */6 * * *"]
