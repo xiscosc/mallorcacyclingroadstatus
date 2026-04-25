@@ -25,7 +25,12 @@
 
 	let { data }: { data: PageData } = $props();
 
-	const checker = createRouteChecker(() => data.incidents);
+	const incidents = $derived.by(() => {
+		const now = Date.now();
+		return data.incidents.filter((i) => !i.endDate || i.endDate.getTime() >= now);
+	});
+
+	const checker = createRouteChecker(() => incidents);
 
 	// Framed to show the whole island on both phone and desktop aspect ratios.
 	const initialZoom = browser && window.matchMedia('(max-width: 640px)').matches ? 8.3 : 9.2;
@@ -62,11 +67,11 @@
 					🚲 Mallorca Cycling Road Status
 				</h1>
 				<p class="max-w-prose text-muted-foreground">
-					{#if data.incidents.length === 0}
+					{#if incidents.length === 0}
 						No active road closures on Mallorca's cycling roads right now.
 					{:else}
-						<span class="font-medium text-foreground">{data.incidents.length}</span>
-						active road closure{data.incidents.length === 1 ? '' : 's'} on Mallorca's cycling roads.
+						<span class="font-medium text-foreground">{incidents.length}</span>
+						active road closure{incidents.length === 1 ? '' : 's'} on Mallorca's cycling roads.
 					{/if}
 					Upload a GPX or paste a Komoot URL to see if your ride is affected.
 				</p>
@@ -112,7 +117,7 @@
 			{#if checker.track}
 				<MapRoute coordinates={checker.track.coordinates} color="#3b82f6" width={5} opacity={0.9} />
 			{/if}
-			{#each data.incidents as incident (incident.id)}
+			{#each incidents as incident (incident.id)}
 				{@const isAffected = checker.affectedIds.has(incident.id)}
 				{@const color = incident.isClosed ? '#ef4444' : '#f59e0b'}
 				{#each incident.coordinates as line, i (i)}
