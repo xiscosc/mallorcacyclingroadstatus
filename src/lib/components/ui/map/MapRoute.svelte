@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getContext } from "svelte";
-	import MapLibreGL from "maplibre-gl";
+	import { getContext } from 'svelte';
+	import MapLibreGL from 'maplibre-gl';
 
 	interface Props {
 		/** Optional unique identifier for the route layer */
@@ -27,7 +27,7 @@
 
 	let {
 		coordinates,
-		color = "#4285F4",
+		color = '#4285F4',
 		width = 3,
 		opacity = 0.8,
 		dashArray,
@@ -35,13 +35,13 @@
 		onmouseenter,
 		onmouseleave,
 		interactive = true,
-		id = crypto.randomUUID(),
+		id = crypto.randomUUID()
 	}: Props = $props();
 
 	const mapCtx = getContext<{
 		getMap: () => MapLibreGL.Map | null;
 		isStyleReady: () => boolean;
-	}>("map");
+	}>('map');
 
 	const sourceId = $derived(`route-source-${id}`);
 	const layerId = $derived(`route-layer-${id}`);
@@ -59,43 +59,43 @@
 
 		// Add source
 		map.addSource(sourceId, {
-			type: "geojson",
+			type: 'geojson',
 			data: {
-				type: "Feature",
+				type: 'Feature',
 				properties: {},
 				geometry: {
-					type: "LineString",
-					coordinates,
-				},
-			},
+					type: 'LineString',
+					coordinates
+				}
+			}
 		});
 
 		// Build paint options with transition definitions
 		// Use default values here - they'll be updated by the paint property effect
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const paint: any = {
-			"line-color": "#94a3b8", // Start with gray (unselected color)
-			"line-width": 5, // Start with unselected width
-			"line-opacity": 0.6, // Start with unselected opacity
-			"line-color-transition": { duration: 300, delay: 0 },
-			"line-width-transition": { duration: 300, delay: 0 },
-			"line-opacity-transition": { duration: 300, delay: 0 },
+			'line-color': '#94a3b8', // Start with gray (unselected color)
+			'line-width': 5, // Start with unselected width
+			'line-opacity': 0.6, // Start with unselected opacity
+			'line-color-transition': { duration: 300, delay: 0 },
+			'line-width-transition': { duration: 300, delay: 0 },
+			'line-opacity-transition': { duration: 300, delay: 0 }
 		};
 
 		if (dashArray) {
-			paint["line-dasharray"] = dashArray;
+			paint['line-dasharray'] = dashArray;
 		}
 
 		// Add layer
 		map.addLayer({
 			id: layerId,
-			type: "line",
+			type: 'line',
 			source: sourceId,
 			layout: {
-				"line-join": "round",
-				"line-cap": "round",
+				'line-join': 'round',
+				'line-cap': 'round'
 			},
-			paint,
+			paint
 		});
 
 		return () => {
@@ -118,12 +118,12 @@
 		const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource | undefined;
 		if (source) {
 			source.setData({
-				type: "Feature",
+				type: 'Feature',
 				properties: {},
 				geometry: {
-					type: "LineString",
-					coordinates,
-				},
+					type: 'LineString',
+					coordinates
+				}
 			});
 		}
 	});
@@ -135,12 +135,12 @@
 
 		if (!loaded || !map || !map.getLayer(layerId)) return;
 
-		map.setPaintProperty(layerId, "line-color", color);
-		map.setPaintProperty(layerId, "line-width", width);
-		map.setPaintProperty(layerId, "line-opacity", opacity);
+		map.setPaintProperty(layerId, 'line-color', color);
+		map.setPaintProperty(layerId, 'line-width', width);
+		map.setPaintProperty(layerId, 'line-opacity', opacity);
 
 		if (dashArray) {
-			map.setPaintProperty(layerId, "line-dasharray", dashArray);
+			map.setPaintProperty(layerId, 'line-dasharray', dashArray);
 		}
 
 		// Move selected routes to top (when opacity is 1, it's selected)
@@ -164,22 +164,22 @@
 			onclick?.();
 		};
 		const handleMouseEnter = () => {
-			map.getCanvas().style.cursor = "pointer";
+			map.getCanvas().style.cursor = 'pointer';
 			onmouseenter?.();
 		};
 		const handleMouseLeave = () => {
-			map.getCanvas().style.cursor = "";
+			map.getCanvas().style.cursor = '';
 			onmouseleave?.();
 		};
 
-		map.on("click", layerId, handleClick);
-		map.on("mouseenter", layerId, handleMouseEnter);
-		map.on("mouseleave", layerId, handleMouseLeave);
+		map.on('click', layerId, handleClick);
+		map.on('mouseenter', layerId, handleMouseEnter);
+		map.on('mouseleave', layerId, handleMouseLeave);
 
 		return () => {
-			map.off("click", layerId, handleClick);
-			map.off("mouseenter", layerId, handleMouseEnter);
-			map.off("mouseleave", layerId, handleMouseLeave);
+			map.off('click', layerId, handleClick);
+			map.off('mouseenter', layerId, handleMouseEnter);
+			map.off('mouseleave', layerId, handleMouseLeave);
 		};
 	});
 </script>

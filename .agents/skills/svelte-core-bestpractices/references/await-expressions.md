@@ -11,9 +11,9 @@ This feature is currently experimental, and you must opt in by adding the `exper
 export default {
 	compilerOptions: {
 		experimental: {
-			async: true,
-		},
-	},
+			async: true
+		}
+	}
 };
 ```
 

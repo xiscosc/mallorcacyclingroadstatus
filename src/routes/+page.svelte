@@ -32,17 +32,19 @@
 	const fmtDate = (d: Date | undefined) =>
 		d ? DateTime.fromJSDate(d).setZone('Europe/Madrid').toFormat('dd LLL HH:mm') : '—';
 
+	const fmtUpdatedAt = (iso: string) =>
+		DateTime.fromISO(iso).setZone('Europe/Madrid').toFormat('dd LLL HH:mm');
+
 	const EMOJI: Record<IncidentType, string> = {
 		[IncidentType.Sports]: '🏅',
 		[IncidentType.Maintenance]: '🚧',
 		[IncidentType.Other]: '⚠️'
 	};
-
 </script>
 
 <main class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6">
 	<section
-		class="bg-card/80 ring-border/70 relative overflow-hidden rounded-2xl p-6 shadow-sm ring-1 backdrop-blur-sm sm:p-8"
+		class="relative overflow-hidden rounded-2xl bg-card/80 p-6 shadow-sm ring-1 ring-border/70 backdrop-blur-sm sm:p-8"
 	>
 		<div
 			class="pointer-events-none absolute -top-24 -right-16 size-64 rounded-full bg-linear-to-br from-indigo-500/25 to-violet-500/25 blur-3xl"
@@ -54,15 +56,15 @@
 		<div class="relative flex items-start justify-between gap-3">
 			<div class="flex min-w-0 flex-col gap-3">
 				<h1
-					class="from-foreground to-foreground/70 bg-linear-to-br bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl"
+					class="bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl"
 				>
 					🚲 Mallorca Cycling Road Status
 				</h1>
-				<p class="text-muted-foreground max-w-prose">
+				<p class="max-w-prose text-muted-foreground">
 					{#if data.incidents.length === 0}
 						No active road closures on Mallorca's cycling roads right now.
 					{:else}
-						<span class="text-foreground font-medium">{data.incidents.length}</span>
+						<span class="font-medium text-foreground">{data.incidents.length}</span>
 						active road closure{data.incidents.length === 1 ? '' : 's'} on Mallorca's cycling roads.
 					{/if}
 					Upload a GPX or paste a Komoot URL to see if your ride is affected.
@@ -90,9 +92,9 @@
 
 	<RouteCheckBanner {checker} />
 
-	<Card class="ring-border/70 relative flex-1 overflow-hidden p-0 shadow-lg ring-1">
+	<Card class="relative flex-1 overflow-hidden p-0 shadow-lg ring-1 ring-border/70">
 		<div
-			class="bg-card/85 absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-full border px-3 py-1.5 text-xs shadow-md backdrop-blur-md"
+			class="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-full border bg-card/85 px-3 py-1.5 text-xs shadow-md backdrop-blur-md"
 		>
 			<span class="flex items-center gap-1.5">
 				<span class="size-2 rounded-full bg-red-500"></span>
@@ -159,20 +161,21 @@
 		</Map>
 	</Card>
 
-	<footer
-		class="text-muted-foreground flex flex-wrap items-center justify-between gap-3 text-xs"
-	>
+	<footer class="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
 		<div class="flex flex-wrap items-center gap-1.5">
 			<span>Data from</span>
 			<a
 				href="https://www.conselldemallorca.net/"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="hover:text-foreground inline-flex items-center gap-1 underline underline-offset-2"
+				class="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground"
 			>
 				Consell de Mallorca
 				<ExternalLink class="size-3" />
 			</a>
+			{#if data.generatedAt}
+				<span class="opacity-70">· updated {fmtUpdatedAt(data.generatedAt)}</span>
+			{/if}
 		</div>
 		<a
 			href="https://ko-fi.com/xiscosc"

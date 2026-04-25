@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { getContext } from "svelte";
-	import MapLibreGL from "maplibre-gl";
-	import { cn } from "$lib/utils.js";
+	import { getContext } from 'svelte';
+	import MapLibreGL from 'maplibre-gl';
+	import { cn } from '$lib/utils.js';
 
 	interface Props {
-		children?: import("svelte").Snippet;
+		children?: import('svelte').Snippet;
 		class?: string;
 	}
 
@@ -15,7 +15,7 @@
 		getElement: () => HTMLDivElement | null;
 		getMap: () => MapLibreGL.Map | null;
 		isReady: () => boolean;
-	}>("marker");
+	}>('marker');
 
 	let wrapperElement: HTMLDivElement | null = $state(null);
 	let movedContent: Node[] = [];
@@ -45,7 +45,7 @@
 
 <!-- Hidden wrapper that holds content until marker is ready -->
 <div bind:this={wrapperElement} style="display: contents;">
-	<div class={cn("relative cursor-pointer", className)}>
+	<div class={cn('relative cursor-pointer', className)}>
 		{#if children}
 			{@render children()}
 		{:else}

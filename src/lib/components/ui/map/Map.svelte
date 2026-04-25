@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { onMount, onDestroy, setContext, untrack } from "svelte";
-	import MapLibreGL from "maplibre-gl";
-	import "maplibre-gl/dist/maplibre-gl.css";
-	import { browser } from "$app/environment";
-	import { theme } from "$lib/theme";
-	import { resolveMapTheme } from "./theme";
+	import { onMount, onDestroy, setContext, untrack } from 'svelte';
+	import MapLibreGL from 'maplibre-gl';
+	import 'maplibre-gl/dist/maplibre-gl.css';
+	import { browser } from '$app/environment';
+	import { theme } from '$lib/theme';
+	import { resolveMapTheme } from './theme';
 
 	// Check document class for theme (works with next-themes, etc.)
-	function getDocumentTheme(): "light" | "dark" | null {
-		if (typeof document === "undefined") return null;
-		if (document.documentElement.classList.contains("dark")) return "dark";
-		if (document.documentElement.classList.contains("light")) return "light";
+	function getDocumentTheme(): 'light' | 'dark' | null {
+		if (typeof document === 'undefined') return null;
+		if (document.documentElement.classList.contains('dark')) return 'dark';
+		if (document.documentElement.classList.contains('light')) return 'light';
 		return null;
 	}
 
 	// Get system preference
-	function getSystemTheme(): "light" | "dark" {
-		if (typeof window === "undefined") return "light";
-		return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+	function getSystemTheme(): 'light' | 'dark' {
+		if (typeof window === 'undefined') return 'light';
+		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 	}
 
-	let tailwindTheme: "light" | "dark" = $state("light");
+	let tailwindTheme: 'light' | 'dark' = $state('light');
 
 	type MapStyleOption = string | MapLibreGL.StyleSpecification;
 
@@ -37,17 +37,17 @@
 	};
 
 	interface Props {
-		children?: import("svelte").Snippet;
+		children?: import('svelte').Snippet;
 		styles?: {
 			light?: MapStyleOption;
 			dark?: MapStyleOption;
 		};
-		theme?: "light" | "dark";
+		theme?: 'light' | 'dark';
 		/** Map projection type. Use `{ type: "globe" }` for 3D globe view. */
 		projection?: MapLibreGL.ProjectionSpecification;
 		center?: [number, number];
 		zoom?: number;
-		options?: Omit<MapLibreGL.MapOptions, "container" | "style">;
+		options?: Omit<MapLibreGL.MapOptions, 'container' | 'style'>;
 		/**
 		 * Bindable reference to the underlying MapLibre map instance.
 		 * Useful for calling map methods imperatively from the parent.
@@ -72,8 +72,8 @@
 	}
 
 	const defaultStyles = {
-		dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-		light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+		dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+		light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 	};
 
 	let {
@@ -87,7 +87,7 @@
 		map = $bindable(null),
 		viewport,
 		onviewportchange,
-		onstyleloaded,
+		onstyleloaded
 	}: Props = $props();
 
 	let mapContainer: HTMLDivElement;
@@ -109,25 +109,25 @@
 			center: [c.lng, c.lat],
 			zoom: mapInstance.getZoom(),
 			bearing: mapInstance.getBearing(),
-			pitch: mapInstance.getPitch(),
+			pitch: mapInstance.getPitch()
 		};
 	}
 
 	const mapStyles = $derived({
 		dark: styles?.dark ?? defaultStyles.dark,
-		light: styles?.light ?? defaultStyles.light,
+		light: styles?.light ?? defaultStyles.light
 	});
 
 	const resolvedTheme = $derived(resolveMapTheme({ explicitTheme, ambientTheme: tailwindTheme }));
 
-	const currentStyle = $derived(resolvedTheme === "light" ? mapStyles.light : mapStyles.dark);
+	const currentStyle = $derived(resolvedTheme === 'light' ? mapStyles.light : mapStyles.dark);
 
 	const isReady = $derived(isMounted && isLoaded && isStyleLoaded);
 
-	setContext("map", {
+	setContext('map', {
 		getMap: () => map,
 		isLoaded: () => hasInitiallyLoaded,
-		isStyleReady: () => isReady,
+		isStyleReady: () => isReady
 	});
 
 	function clearStyleTimeout() {
@@ -163,22 +163,22 @@
 			const observer = new MutationObserver(updateTheme);
 			observer.observe(document.documentElement, {
 				attributes: true,
-				attributeFilter: ["class"],
+				attributeFilter: ['class']
 			});
 
 			// Also watch for system preference changes
-			const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+			const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 			const handleSystemChange = (e: MediaQueryListEvent) => {
 				// Only use system preference if no document class is set
 				if (!getDocumentTheme()) {
-					tailwindTheme = e.matches ? "dark" : "light";
+					tailwindTheme = e.matches ? 'dark' : 'light';
 				}
 			};
-			mediaQuery.addEventListener("change", handleSystemChange);
+			mediaQuery.addEventListener('change', handleSystemChange);
 
 			onDestroy(() => {
 				observer.disconnect();
-				mediaQuery.removeEventListener("change", handleSystemChange);
+				mediaQuery.removeEventListener('change', handleSystemChange);
 			});
 		}
 
@@ -188,13 +188,13 @@
 			fadeDuration: 0,
 			renderWorldCopies: false,
 			attributionControl: {
-				compact: true,
+				compact: true
 			},
 			center: viewport?.center ?? center,
 			zoom: viewport?.zoom ?? zoom,
 			bearing: viewport?.bearing ?? 0,
 			pitch: viewport?.pitch ?? 0,
-			...options,
+			...options
 		});
 
 		const styleDataHandler = () => {
@@ -227,18 +227,18 @@
 			onviewportchange?.(getViewport(mapInstance));
 		};
 
-		mapInstance.on("load", loadHandler);
-		mapInstance.on("styledata", styleDataHandler);
-		mapInstance.on("move", handleMove);
+		mapInstance.on('load', loadHandler);
+		mapInstance.on('styledata', styleDataHandler);
+		mapInstance.on('move', handleMove);
 
-		mapInstance.on("dragstart", () => (isInteracting = true));
-		mapInstance.on("dragend", () => (isInteracting = false));
-		mapInstance.on("zoomstart", () => (isInteracting = true));
-		mapInstance.on("zoomend", () => (isInteracting = false));
-		mapInstance.on("rotatestart", () => (isInteracting = true));
-		mapInstance.on("rotateend", () => (isInteracting = false));
-		mapInstance.on("pitchstart", () => (isInteracting = true));
-		mapInstance.on("pitchend", () => (isInteracting = false));
+		mapInstance.on('dragstart', () => (isInteracting = true));
+		mapInstance.on('dragend', () => (isInteracting = false));
+		mapInstance.on('zoomstart', () => (isInteracting = true));
+		mapInstance.on('zoomend', () => (isInteracting = false));
+		mapInstance.on('rotatestart', () => (isInteracting = true));
+		mapInstance.on('rotateend', () => (isInteracting = false));
+		mapInstance.on('pitchstart', () => (isInteracting = true));
+		mapInstance.on('pitchend', () => (isInteracting = false));
 
 		map = mapInstance;
 	});
@@ -253,7 +253,7 @@
 			center: viewport.center ?? current.center,
 			zoom: viewport.zoom ?? current.zoom,
 			bearing: viewport.bearing ?? current.bearing,
-			pitch: viewport.pitch ?? current.pitch,
+			pitch: viewport.pitch ?? current.pitch
 		};
 
 		if (
@@ -267,7 +267,7 @@
 		}
 
 		internalUpdate = true;
-		map!.once("moveend", () => {
+		map!.once('moveend', () => {
 			internalUpdate = false;
 		});
 		map.jumpTo(next);
@@ -289,12 +289,12 @@
 			isStyleLoaded = false;
 			map!.setStyle(style, { diff: true });
 
-			map!.once("styledata", () => {
+			map!.once('styledata', () => {
 				map!.jumpTo({
 					center: currCenter,
 					zoom: currZoom,
 					bearing: currBearing,
-					pitch: currPitch,
+					pitch: currPitch
 				});
 			});
 		});
@@ -328,12 +328,12 @@
 	{#if !isReady}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div class="flex gap-1">
-				<span class="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full"></span>
+				<span class="size-1.5 animate-pulse rounded-full bg-muted-foreground/60"></span>
 				<span
-					class="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:150ms]"
+					class="size-1.5 animate-pulse rounded-full bg-muted-foreground/60 [animation-delay:150ms]"
 				></span>
 				<span
-					class="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:300ms]"
+					class="size-1.5 animate-pulse rounded-full bg-muted-foreground/60 [animation-delay:300ms]"
 				></span>
 			</div>
 		</div>

@@ -17,8 +17,6 @@ export default {
 		return sveltekit.fetch(request, env, ctx);
 	},
 	scheduled(_event: ScheduledController, env, ctx: ExecutionContext) {
-		ctx.waitUntil(
-			runCron(env).then((r) => console.log('cron run:', JSON.stringify(r)))
-		);
+		ctx.waitUntil(runCron(env).then((r) => console.log('cron run:', JSON.stringify(r))));
 	}
 } satisfies ExportedHandler<Env>;

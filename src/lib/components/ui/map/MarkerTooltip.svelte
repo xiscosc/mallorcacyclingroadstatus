@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { getContext } from "svelte";
-	import MapLibreGL, { type PopupOptions } from "maplibre-gl";
-	import { cn } from "$lib/utils.js";
+	import { getContext } from 'svelte';
+	import MapLibreGL, { type PopupOptions } from 'maplibre-gl';
+	import { cn } from '$lib/utils.js';
 
 	interface Props {
-		children?: import("svelte").Snippet;
+		children?: import('svelte').Snippet;
 		class?: string;
-		offset?: PopupOptions["offset"];
-		anchor?: PopupOptions["anchor"];
+		offset?: PopupOptions['offset'];
+		anchor?: PopupOptions['anchor'];
 	}
 
 	let { children, class: className, offset = 16, anchor }: Props = $props();
@@ -17,7 +17,7 @@
 		getElement: () => HTMLDivElement | null;
 		getMap: () => MapLibreGL.Map | null;
 		isReady: () => boolean;
-	}>("marker");
+	}>('marker');
 
 	let wrapperElement: HTMLDivElement | null = $state(null);
 
@@ -31,21 +31,21 @@
 		if (!ready || !marker || !markerElement || !map || !wrapperElement) return;
 
 		// Create popup container
-		const container = document.createElement("div");
+		const container = document.createElement('div');
 
 		// Build popup options
 		const popupOptions: PopupOptions = {
 			offset,
 			closeOnClick: true,
 			closeButton: false,
-			className: "maplibre-popup-transparent",
+			className: 'maplibre-popup-transparent'
 		};
 
 		if (anchor !== undefined) popupOptions.anchor = anchor;
 
 		// Create popup
 		const popupInstance = new MapLibreGL.Popup(popupOptions)
-			.setMaxWidth("none")
+			.setMaxWidth('none')
 			.setDOMContent(container);
 
 		// Move content to popup container
@@ -81,15 +81,15 @@
 			pinned = false;
 		};
 
-		markerElement.addEventListener("mouseenter", handleMouseEnter);
-		markerElement.addEventListener("mouseleave", handleMouseLeave);
-		markerElement.addEventListener("click", handleClick);
-		popupInstance.on("close", handlePopupClose);
+		markerElement.addEventListener('mouseenter', handleMouseEnter);
+		markerElement.addEventListener('mouseleave', handleMouseLeave);
+		markerElement.addEventListener('click', handleClick);
+		popupInstance.on('close', handlePopupClose);
 
 		return () => {
-			markerElement.removeEventListener("mouseenter", handleMouseEnter);
-			markerElement.removeEventListener("mouseleave", handleMouseLeave);
-			markerElement.removeEventListener("click", handleClick);
+			markerElement.removeEventListener('mouseenter', handleMouseEnter);
+			markerElement.removeEventListener('mouseleave', handleMouseLeave);
+			markerElement.removeEventListener('click', handleClick);
 
 			// Move content back
 			while (container.firstChild) {
@@ -104,7 +104,7 @@
 <div bind:this={wrapperElement} style="display: contents;">
 	<div
 		class={cn(
-			"animate-in fade-in-0 zoom-in-95 bg-foreground text-background rounded-md px-2 py-1 text-xs shadow-md",
+			'animate-in rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-md fade-in-0 zoom-in-95',
 			className
 		)}
 	>

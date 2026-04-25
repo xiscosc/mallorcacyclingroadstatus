@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { getContext } from "svelte";
-	import MapLibreGL from "maplibre-gl";
-	import { cn } from "$lib/utils.js";
-	import Plus from "@lucide/svelte/icons/plus";
-	import Minus from "@lucide/svelte/icons/minus";
-	import Locate from "@lucide/svelte/icons/locate";
-	import Maximize from "@lucide/svelte/icons/maximize";
-	import Loader2 from "@lucide/svelte/icons/loader-2";
+	import { getContext } from 'svelte';
+	import MapLibreGL from 'maplibre-gl';
+	import { cn } from '$lib/utils.js';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Minus from '@lucide/svelte/icons/minus';
+	import Locate from '@lucide/svelte/icons/locate';
+	import Maximize from '@lucide/svelte/icons/maximize';
+	import Loader2 from '@lucide/svelte/icons/loader-2';
 
 	interface Props {
-		position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 		showZoom?: boolean;
 		showCompass?: boolean;
 		showLocate?: boolean;
@@ -19,29 +19,29 @@
 	}
 
 	let {
-		position = "bottom-right",
+		position = 'bottom-right',
 		showZoom = true,
 		showCompass = false,
 		showLocate = false,
 		showFullscreen = false,
 		class: className,
-		onlocate,
+		onlocate
 	}: Props = $props();
 
 	const mapCtx = getContext<{
 		getMap: () => MapLibreGL.Map | null;
 		isLoaded: () => boolean;
-	}>("map");
+	}>('map');
 
 	let waitingForLocation = $state(false);
 	let compassElement: SVGSVGElement | null = $state(null);
 	const loaded = $derived(mapCtx.isLoaded());
 
 	const positionClasses = {
-		"top-left": "top-2 left-2",
-		"top-right": "top-2 right-2",
-		"bottom-left": "bottom-2 left-2",
-		"bottom-right": "bottom-10 right-2",
+		'top-left': 'top-2 left-2',
+		'top-right': 'top-2 right-2',
+		'bottom-left': 'bottom-2 left-2',
+		'bottom-right': 'bottom-10 right-2'
 	};
 
 	// Update compass rotation
@@ -57,13 +57,13 @@
 			compassElement.style.transform = `rotateX(${pitch}deg) rotateZ(${-bearing}deg)`;
 		};
 
-		map.on("rotate", updateRotation);
-		map.on("pitch", updateRotation);
+		map.on('rotate', updateRotation);
+		map.on('pitch', updateRotation);
 		updateRotation();
 
 		return () => {
-			map.off("rotate", updateRotation);
-			map.off("pitch", updateRotation);
+			map.off('rotate', updateRotation);
+			map.off('pitch', updateRotation);
 		};
 	});
 
@@ -88,23 +88,23 @@
 
 		waitingForLocation = true;
 
-		if ("geolocation" in navigator) {
+		if ('geolocation' in navigator) {
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
 					const coords = {
 						longitude: position.coords.longitude,
-						latitude: position.coords.latitude,
+						latitude: position.coords.latitude
 					};
 					map.flyTo({
 						center: [coords.longitude, coords.latitude],
 						zoom: 14,
-						duration: 1500,
+						duration: 1500
 					});
 					onlocate?.(coords);
 					waitingForLocation = false;
 				},
 				(error) => {
-					console.error("Error getting location:", error);
+					console.error('Error getting location:', error);
 					waitingForLocation = false;
 				}
 			);
@@ -125,16 +125,16 @@
 </script>
 
 {#if loaded}
-	<div class={cn("absolute z-10 flex flex-col gap-1.5", positionClasses[position], className)}>
+	<div class={cn('absolute z-10 flex flex-col gap-1.5', positionClasses[position], className)}>
 		{#if showZoom}
 			<div
-				class="border-border bg-background [&>button:not(:last-child)]:border-border flex flex-col overflow-hidden rounded-md border shadow-sm [&>button:not(:last-child)]:border-b"
+				class="flex flex-col overflow-hidden rounded-md border border-border bg-background shadow-sm [&>button:not(:last-child)]:border-b [&>button:not(:last-child)]:border-border"
 			>
 				<button
 					onclick={handleZoomIn}
 					aria-label="Zoom in"
 					type="button"
-					class="hover:bg-accent dark:hover:bg-accent/40 flex size-8 items-center justify-center transition-colors"
+					class="flex size-8 items-center justify-center transition-colors hover:bg-accent dark:hover:bg-accent/40"
 				>
 					<Plus class="size-4" />
 				</button>
@@ -142,7 +142,7 @@
 					onclick={handleZoomOut}
 					aria-label="Zoom out"
 					type="button"
-					class="hover:bg-accent dark:hover:bg-accent/40 flex size-8 items-center justify-center transition-colors"
+					class="flex size-8 items-center justify-center transition-colors hover:bg-accent dark:hover:bg-accent/40"
 				>
 					<Minus class="size-4" />
 				</button>
@@ -151,13 +151,13 @@
 
 		{#if showCompass}
 			<div
-				class="border-border bg-background flex flex-col overflow-hidden rounded-md border shadow-sm"
+				class="flex flex-col overflow-hidden rounded-md border border-border bg-background shadow-sm"
 			>
 				<button
 					onclick={handleResetBearing}
 					aria-label="Reset bearing to north"
 					type="button"
-					class="hover:bg-accent flex size-8 items-center justify-center transition-colors"
+					class="flex size-8 items-center justify-center transition-colors hover:bg-accent"
 				>
 					<svg
 						bind:this={compassElement}
@@ -176,15 +176,15 @@
 
 		{#if showLocate}
 			<div
-				class="border-border bg-background flex flex-col overflow-hidden rounded-md border shadow-sm"
+				class="flex flex-col overflow-hidden rounded-md border border-border bg-background shadow-sm"
 			>
 				<button
 					onclick={handleLocate}
 					aria-label="Find my location"
 					type="button"
 					class={cn(
-						"hover:bg-accent dark:hover:bg-accent/40 flex size-8 items-center justify-center transition-colors",
-						waitingForLocation && "pointer-events-none cursor-not-allowed opacity-50"
+						'flex size-8 items-center justify-center transition-colors hover:bg-accent dark:hover:bg-accent/40',
+						waitingForLocation && 'pointer-events-none cursor-not-allowed opacity-50'
 					)}
 					disabled={waitingForLocation}
 				>
@@ -199,13 +199,13 @@
 
 		{#if showFullscreen}
 			<div
-				class="border-border bg-background flex flex-col overflow-hidden rounded-md border shadow-sm"
+				class="flex flex-col overflow-hidden rounded-md border border-border bg-background shadow-sm"
 			>
 				<button
 					onclick={handleFullscreen}
 					aria-label="Toggle fullscreen"
 					type="button"
-					class="hover:bg-accent dark:hover:bg-accent/40 flex size-8 items-center justify-center transition-colors"
+					class="flex size-8 items-center justify-center transition-colors hover:bg-accent dark:hover:bg-accent/40"
 				>
 					<Maximize class="size-4" />
 				</button>
