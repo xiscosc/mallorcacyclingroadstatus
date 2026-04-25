@@ -1,8 +1,8 @@
-type Theme = "light" | "dark";
+type Theme = 'light' | 'dark';
 
 export function resolveMapTheme({
 	explicitTheme,
-	ambientTheme,
+	ambientTheme
 }: {
 	explicitTheme?: Theme;
 	ambientTheme: Theme;

@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { getContext, setContext, untrack } from "svelte";
-	import MapLibreGL, { type MarkerOptions } from "maplibre-gl";
+	import { getContext, setContext, untrack } from 'svelte';
+	import MapLibreGL, { type MarkerOptions } from 'maplibre-gl';
 
 	type Anchor =
-		| "center"
-		| "top"
-		| "bottom"
-		| "left"
-		| "right"
-		| "top-left"
-		| "top-right"
-		| "bottom-left"
-		| "bottom-right";
+		| 'center'
+		| 'top'
+		| 'bottom'
+		| 'left'
+		| 'right'
+		| 'top-left'
+		| 'top-right'
+		| 'bottom-left'
+		| 'bottom-right';
 
 	interface Props {
 		longitude: number;
 		latitude: number;
-		children?: import("svelte").Snippet;
+		children?: import('svelte').Snippet;
 		onclick?: (e: MouseEvent) => void;
 		onmouseenter?: (e: MouseEvent) => void;
 		onmouseleave?: (e: MouseEvent) => void;
@@ -25,10 +25,10 @@
 		ondragend?: (lngLat: { lng: number; lat: number }) => void;
 		draggable?: boolean;
 		anchor?: Anchor;
-		offset?: MarkerOptions["offset"];
+		offset?: MarkerOptions['offset'];
 		rotation?: number;
-		pitchAlignment?: MarkerOptions["pitchAlignment"];
-		rotationAlignment?: MarkerOptions["rotationAlignment"];
+		pitchAlignment?: MarkerOptions['pitchAlignment'];
+		rotationAlignment?: MarkerOptions['rotationAlignment'];
 	}
 
 	let {
@@ -42,17 +42,17 @@
 		ondrag,
 		ondragend,
 		draggable = false,
-		anchor = "center",
+		anchor = 'center',
 		offset,
 		rotation,
 		pitchAlignment,
-		rotationAlignment,
+		rotationAlignment
 	}: Props = $props();
 
 	const mapCtx = getContext<{
 		getMap: () => MapLibreGL.Map | null;
 		isLoaded: () => boolean;
-	}>("map");
+	}>('map');
 
 	let marker: MapLibreGL.Marker | null = $state(null);
 	let markerElement: HTMLDivElement | null = $state(null);
@@ -60,13 +60,13 @@
 	let isDragging = $state(false);
 
 	// Provide marker context for child components
-	setContext("marker", {
+	setContext('marker', {
 		getMarker: () => marker,
 		getElement: () => markerElement,
 		getMap: () => mapCtx.getMap(),
 		isReady: () => isReady,
 		isDraggable: () => draggable,
-		isDragging: () => isDragging,
+		isDragging: () => isDragging
 	});
 
 	// Create marker when map is ready
@@ -80,8 +80,8 @@
 		const lng = untrack(() => longitude);
 		const lat = untrack(() => latitude);
 		if (
-			typeof lng !== "number" ||
-			typeof lat !== "number" ||
+			typeof lng !== 'number' ||
+			typeof lat !== 'number' ||
 			Number.isNaN(lng) ||
 			Number.isNaN(lat)
 		) {
@@ -89,15 +89,15 @@
 		}
 
 		// Create container element programmatically
-		const container = document.createElement("div");
-		container.className = "cursor-pointer";
+		const container = document.createElement('div');
+		container.className = 'cursor-pointer';
 		markerElement = container;
 
 		// Build marker options
 		const markerOptions: MarkerOptions = {
 			element: container,
 			draggable,
-			anchor,
+			anchor
 		};
 
 		if (offset !== undefined) markerOptions.offset = offset;
@@ -111,10 +111,10 @@
 		marker = markerInstance;
 
 		// Mouse event listeners on the container
-		if (onclick) container.addEventListener("click", onclick);
-		if (onmouseenter) container.addEventListener("mouseenter", onmouseenter);
+		if (onclick) container.addEventListener('click', onclick);
+		if (onmouseenter) container.addEventListener('mouseenter', onmouseenter);
 		if (onmouseleave) {
-			container.addEventListener("mouseleave", (e) => {
+			container.addEventListener('mouseleave', (e) => {
 				if (!isDragging) onmouseleave(e);
 			});
 		}
@@ -136,23 +136,23 @@
 		};
 
 		if (draggable) {
-			markerInstance.on("dragstart", handleDragStart);
-			markerInstance.on("drag", handleDrag);
-			markerInstance.on("dragend", handleDragEnd);
+			markerInstance.on('dragstart', handleDragStart);
+			markerInstance.on('drag', handleDrag);
+			markerInstance.on('dragend', handleDragEnd);
 		}
 
 		isReady = true;
 
 		// Cleanup
 		return () => {
-			if (onclick) container.removeEventListener("click", onclick);
-			if (onmouseenter) container.removeEventListener("mouseenter", onmouseenter);
-			if (onmouseleave) container.removeEventListener("mouseleave", onmouseleave);
+			if (onclick) container.removeEventListener('click', onclick);
+			if (onmouseenter) container.removeEventListener('mouseenter', onmouseenter);
+			if (onmouseleave) container.removeEventListener('mouseleave', onmouseleave);
 
 			if (draggable) {
-				markerInstance.off("dragstart", handleDragStart);
-				markerInstance.off("drag", handleDrag);
-				markerInstance.off("dragend", handleDragEnd);
+				markerInstance.off('dragstart', handleDragStart);
+				markerInstance.off('drag', handleDrag);
+				markerInstance.off('dragend', handleDragEnd);
 			}
 
 			markerInstance.remove();
@@ -166,8 +166,8 @@
 	$effect(() => {
 		if (
 			marker &&
-			typeof longitude === "number" &&
-			typeof latitude === "number" &&
+			typeof longitude === 'number' &&
+			typeof latitude === 'number' &&
 			!Number.isNaN(longitude) &&
 			!Number.isNaN(latitude)
 		) {

@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { getContext } from "svelte";
-	import MapLibreGL, { type PopupOptions } from "maplibre-gl";
-	import { cn } from "$lib/utils.js";
-	import X from "@lucide/svelte/icons/x";
+	import { getContext } from 'svelte';
+	import MapLibreGL, { type PopupOptions } from 'maplibre-gl';
+	import { cn } from '$lib/utils.js';
+	import X from '@lucide/svelte/icons/x';
 
 	interface Props {
-		children?: import("svelte").Snippet;
+		children?: import('svelte').Snippet;
 		class?: string;
 		closeButton?: boolean;
-		offset?: PopupOptions["offset"];
-		anchor?: PopupOptions["anchor"];
+		offset?: PopupOptions['offset'];
+		anchor?: PopupOptions['anchor'];
 		closeOnClick?: boolean;
 		closeOnMove?: boolean;
 		focusAfterOpen?: boolean;
@@ -25,7 +25,7 @@
 		closeOnClick,
 		closeOnMove,
 		focusAfterOpen,
-		maxWidth,
+		maxWidth
 	}: Props = $props();
 
 	const markerCtx = getContext<{
@@ -35,7 +35,7 @@
 		isReady: () => boolean;
 		isDraggable?: () => boolean;
 		isDragging?: () => boolean;
-	}>("marker");
+	}>('marker');
 
 	let popup: MapLibreGL.Popup | null = null;
 	let wrapperElement: HTMLDivElement | null = $state(null);
@@ -49,13 +49,13 @@
 		if (!ready || !marker || !wrapperElement) return;
 
 		// Create popup container
-		const container = document.createElement("div");
+		const container = document.createElement('div');
 
 		// Build popup options
 		const popupOptions: PopupOptions = {
 			offset,
 			closeButton: false,
-			className: "maplibre-popup-transparent",
+			className: 'maplibre-popup-transparent'
 		};
 
 		if (anchor !== undefined) popupOptions.anchor = anchor;
@@ -74,7 +74,7 @@
 		if (maxWidth) {
 			popupInstance.setMaxWidth(maxWidth);
 		} else {
-			popupInstance.setMaxWidth("none");
+			popupInstance.setMaxWidth('none');
 		}
 
 		// Attach popup to marker
@@ -127,7 +127,7 @@
 <div bind:this={wrapperElement} style="display: contents;">
 	<div
 		class={cn(
-			"animate-in fade-in-0 zoom-in-95 bg-popover text-popover-foreground relative rounded-md border p-3 shadow-md",
+			'relative animate-in rounded-md border bg-popover p-3 text-popover-foreground shadow-md fade-in-0 zoom-in-95',
 			className
 		)}
 	>
@@ -135,7 +135,7 @@
 			<button
 				type="button"
 				onclick={handleClose}
-				class="ring-offset-background focus:ring-ring absolute top-1 right-1 z-10 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+				class="absolute top-1 right-1 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
 				aria-label="Close popup"
 			>
 				<X class="h-4 w-4" />

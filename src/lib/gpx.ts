@@ -50,10 +50,7 @@ function bboxOf(coords: [number, number][]): Bbox {
 
 function bboxOverlaps(a: Bbox, b: Bbox, padDeg: number): boolean {
 	return (
-		a[0] - padDeg <= b[2] &&
-		a[2] + padDeg >= b[0] &&
-		a[1] - padDeg <= b[3] &&
-		a[3] + padDeg >= b[1]
+		a[0] - padDeg <= b[2] && a[2] + padDeg >= b[0] && a[1] - padDeg <= b[3] && a[3] + padDeg >= b[1]
 	);
 }
 

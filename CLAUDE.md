@@ -29,6 +29,7 @@ Local secrets: copy `.dev.vars.example` → `.dev.vars` (gitignored) and fill in
 `src/worker.ts` is a thin wrapper that re-exports the `fetch` handler from `adapter-cloudflare`'s generated worker (`.svelte-kit/cloudflare/_worker.js`) and adds a `scheduled` handler that calls `runCron`. `wrangler.toml` points `main` here, so SvelteKit and the cron cohabit one worker. The build artifact only exists after `vite build`, hence the `@ts-ignore` on its import.
 
 `wrangler.toml` defines:
+
 - R2 binding `INCIDENTS` (bucket `mallorca-cycling-incidents`)
 - Cron `0 */6 * * *` (every 6 hours UTC)
 - Custom domain route `mallorcacyclingroads.cc`
@@ -69,6 +70,7 @@ Standard SvelteKit: `$lib` → `src/lib`, `$app/*` from the runtime. `tsconfig.j
 ## Conventions
 
 - **Prettier**: tabs, single quotes, no trailing commas, 100-col print width, `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`. Always run `bun run format` before committing.
-- **Platform bindings** are typed in `src/app.d.ts` under `App.Platform.env`; add new R2/var/secret bindings there *and* in `wrangler.toml`.
+- **Dates/times**: use Luxon (`DateTime` from `luxon`) for parsing, formatting, and zone conversion in user-facing code. Display times in `Europe/Madrid` (e.g. `DateTime.fromISO(iso).setZone('Europe/Madrid').toFormat('dd LLL HH:mm')`). The Consell provider already parses `DD/MM/YYYY HH:MM` source strings via Luxon.
+- **Platform bindings** are typed in `src/app.d.ts` under `App.Platform.env`; add new R2/var/secret bindings there _and_ in `wrangler.toml`.
 - New incident sources: implement `IncidentsProvider`, add to `buildProviders` in `cron.ts`, surface any new env vars in `app.d.ts`, `wrangler.toml`, `.dev.vars.example`, and the `CronEnv` type.
 - The `CYCLING_ROADS` whitelist in `src/lib/cycling-roads.ts` excludes motorways/autovías where bikes are banned (Ma-1, Ma-13, Ma-19, Ma-20, Ma-30) and is segment-aware for partially-banned roads (Ma-11, Ma-11A, Ma-15) — read the header comment before editing.

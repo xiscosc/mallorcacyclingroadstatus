@@ -9,43 +9,43 @@ Pre-built shadcn-svelte component definitions and implementations for json-rende
 
 ## Two Entry Points
 
-| Entry Point | Exports | Use For |
-|-------------|---------|---------|
-| `@json-render/shadcn-svelte/catalog` | `shadcnComponentDefinitions` | Catalog schemas (no Svelte dependency, safe for server) |
-| `@json-render/shadcn-svelte` | `shadcnComponents`, `shadcnComponentDefinitions` | Svelte implementations + catalog schemas |
+| Entry Point                          | Exports                                          | Use For                                                 |
+| ------------------------------------ | ------------------------------------------------ | ------------------------------------------------------- |
+| `@json-render/shadcn-svelte/catalog` | `shadcnComponentDefinitions`                     | Catalog schemas (no Svelte dependency, safe for server) |
+| `@json-render/shadcn-svelte`         | `shadcnComponents`, `shadcnComponentDefinitions` | Svelte implementations + catalog schemas                |
 
 ## Usage Pattern
 
 Pick the components you need from the standard definitions. Do not spread all definitions -- explicitly select what your app uses:
 
 ```typescript
-import { defineCatalog } from "@json-render/core";
-import { schema } from "@json-render/svelte/schema";
-import { shadcnComponentDefinitions } from "@json-render/shadcn-svelte/catalog";
-import { defineRegistry } from "@json-render/svelte";
-import { shadcnComponents } from "@json-render/shadcn-svelte";
+import { defineCatalog } from '@json-render/core';
+import { schema } from '@json-render/svelte/schema';
+import { shadcnComponentDefinitions } from '@json-render/shadcn-svelte/catalog';
+import { defineRegistry } from '@json-render/svelte';
+import { shadcnComponents } from '@json-render/shadcn-svelte';
 
 // Catalog: pick definitions
 const catalog = defineCatalog(schema, {
-  components: {
-    Card: shadcnComponentDefinitions.Card,
-    Stack: shadcnComponentDefinitions.Stack,
-    Heading: shadcnComponentDefinitions.Heading,
-    Button: shadcnComponentDefinitions.Button,
-    Input: shadcnComponentDefinitions.Input,
-  },
-  actions: {},
+	components: {
+		Card: shadcnComponentDefinitions.Card,
+		Stack: shadcnComponentDefinitions.Stack,
+		Heading: shadcnComponentDefinitions.Heading,
+		Button: shadcnComponentDefinitions.Button,
+		Input: shadcnComponentDefinitions.Input
+	},
+	actions: {}
 });
 
 // Registry: pick matching implementations
 const { registry } = defineRegistry(catalog, {
-  components: {
-    Card: shadcnComponents.Card,
-    Stack: shadcnComponents.Stack,
-    Heading: shadcnComponents.Heading,
-    Button: shadcnComponents.Button,
-    Input: shadcnComponents.Input,
-  },
+	components: {
+		Card: shadcnComponents.Card,
+		Stack: shadcnComponents.Stack,
+		Heading: shadcnComponents.Heading,
+		Button: shadcnComponents.Button,
+		Input: shadcnComponents.Input
+	}
 });
 ```
 
@@ -53,32 +53,35 @@ Then render in your Svelte component:
 
 ```svelte
 <script lang="ts">
-  import { Renderer, JsonUIProvider } from "@json-render/svelte";
+	import { Renderer, JsonUIProvider } from '@json-render/svelte';
 
-  export let spec;
-  export let registry;
+	export let spec;
+	export let registry;
 </script>
 
 <JsonUIProvider initialState={spec?.state ?? {}}>
-  <Renderer {spec} {registry} />
+	<Renderer {spec} {registry} />
 </JsonUIProvider>
 ```
 
 ## Available Components
 
 ### Layout
+
 - **Card** - Container with optional title, description, maxWidth, centered
 - **Stack** - Flex container with direction, gap, align, justify
 - **Grid** - Grid layout with columns (number) and gap
 - **Separator** - Visual divider with orientation
 
 ### Navigation
+
 - **Tabs** - Tabbed navigation with tabs array, defaultValue, value
 - **Accordion** - Collapsible sections with items array and type (single/multiple)
 - **Collapsible** - Single collapsible section with title
 - **Pagination** - Page navigation with totalPages and page
 
 ### Overlay
+
 - **Dialog** - Modal dialog with title, description, openPath
 - **Drawer** - Bottom drawer with title, description, openPath
 - **Tooltip** - Hover tooltip with content and text
@@ -86,6 +89,7 @@ Then render in your Svelte component:
 - **DropdownMenu** - Dropdown with label and items array
 
 ### Content
+
 - **Heading** - Heading text with level (h1-h4)
 - **Text** - Paragraph with variant (body, caption, muted, lead, code)
 - **Image** - Image with alt, width, height
@@ -96,11 +100,13 @@ Then render in your Svelte component:
 - **Table** - Data table with columns (string[]) and rows (string[][])
 
 ### Feedback
+
 - **Progress** - Progress bar with value, max, label
 - **Skeleton** - Loading placeholder with width, height, rounded
 - **Spinner** - Loading spinner with size and label
 
 ### Input
+
 - **Button** - Button with label, variant (primary, secondary, danger), disabled
 - **Link** - Anchor link with label and href
 - **Input** - Text input with label, name, type, placeholder, value, checks
@@ -117,6 +123,7 @@ Then render in your Svelte component:
 ## Validation Timing (`validateOn`)
 
 All form components support `validateOn` to control when validation runs:
+
 - `"change"` -- validate on every input change (default for Select, Checkbox, Radio, Switch)
 - `"blur"` -- validate when field loses focus (default for Input, Textarea)
 - `"submit"` -- validate only on form submission

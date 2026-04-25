@@ -1,6 +1,6 @@
 <script lang="ts" generics="P extends GeoJSON.GeoJsonProperties">
-	import { getContext } from "svelte";
-	import MapLibreGL from "maplibre-gl";
+	import { getContext } from 'svelte';
+	import MapLibreGL from 'maplibre-gl';
 
 	interface Props {
 		/** GeoJSON FeatureCollection data or URL to fetch GeoJSON from */
@@ -28,17 +28,17 @@
 		data,
 		clusterMaxZoom = 14,
 		clusterRadius = 50,
-		clusterColors = ["#22c55e", "#eab308", "#ef4444"],
+		clusterColors = ['#22c55e', '#eab308', '#ef4444'],
 		clusterThresholds = [100, 750],
-		pointColor = "#3b82f6",
+		pointColor = '#3b82f6',
 		onpointclick,
-		onclusterclick,
+		onclusterclick
 	}: Props = $props();
 
 	const mapCtx = getContext<{
 		getMap: () => MapLibreGL.Map | null;
 		isStyleReady: () => boolean;
-	}>("map");
+	}>('map');
 
 	const id = crypto.randomUUID();
 	const sourceId = $derived(`cluster-source-${id}`);
@@ -65,72 +65,72 @@
 
 		// Add clustered GeoJSON source
 		map.addSource(sourceId, {
-			type: "geojson",
+			type: 'geojson',
 			data,
 			cluster: true,
 			clusterMaxZoom,
-			clusterRadius,
+			clusterRadius
 		});
 
 		// Add cluster circles layer
 		map.addLayer({
 			id: clusterLayerId,
-			type: "circle",
+			type: 'circle',
 			source: sourceId,
-			filter: ["has", "point_count"],
+			filter: ['has', 'point_count'],
 			paint: {
-				"circle-color": [
-					"step",
-					["get", "point_count"],
+				'circle-color': [
+					'step',
+					['get', 'point_count'],
 					clusterColors[0],
 					clusterThresholds[0],
 					clusterColors[1],
 					clusterThresholds[1],
-					clusterColors[2],
+					clusterColors[2]
 				],
-				"circle-radius": [
-					"step",
-					["get", "point_count"],
+				'circle-radius': [
+					'step',
+					['get', 'point_count'],
 					20,
 					clusterThresholds[0],
 					30,
 					clusterThresholds[1],
-					40,
+					40
 				],
-				"circle-stroke-width": 1,
-				"circle-stroke-color": "#fff",
-				"circle-opacity": 0.85,
-			},
+				'circle-stroke-width': 1,
+				'circle-stroke-color': '#fff',
+				'circle-opacity': 0.85
+			}
 		});
 
 		// Add cluster count text layer
 		map.addLayer({
 			id: clusterCountLayerId,
-			type: "symbol",
+			type: 'symbol',
 			source: sourceId,
-			filter: ["has", "point_count"],
+			filter: ['has', 'point_count'],
 			layout: {
-				"text-field": "{point_count_abbreviated}",
-				"text-font": ["Open Sans"],
-				"text-size": 12,
+				'text-field': '{point_count_abbreviated}',
+				'text-font': ['Open Sans'],
+				'text-size': 12
 			},
 			paint: {
-				"text-color": "#fff",
-			},
+				'text-color': '#fff'
+			}
 		});
 
 		// Add unclustered point layer
 		map.addLayer({
 			id: unclusteredLayerId,
-			type: "circle",
+			type: 'circle',
 			source: sourceId,
-			filter: ["!", ["has", "point_count"]],
+			filter: ['!', ['has', 'point_count']],
 			paint: {
-				"circle-color": pointColor,
-				"circle-radius": 5,
-				"circle-stroke-width": 2,
-				"circle-stroke-color": "#fff",
-			},
+				'circle-color': pointColor,
+				'circle-radius': 5,
+				'circle-stroke-width': 2,
+				'circle-stroke-color': '#fff'
+			}
 		});
 
 		return () => {
@@ -150,7 +150,7 @@
 		const map = mapCtx.getMap();
 		const loaded = mapCtx.isStyleReady();
 
-		if (!loaded || !map || typeof data === "string") return;
+		if (!loaded || !map || typeof data === 'string') return;
 
 		const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource | undefined;
 		if (source) {
@@ -167,29 +167,29 @@
 
 		// Update cluster layer colors and sizes
 		if (map.getLayer(clusterLayerId)) {
-			map.setPaintProperty(clusterLayerId, "circle-color", [
-				"step",
-				["get", "point_count"],
+			map.setPaintProperty(clusterLayerId, 'circle-color', [
+				'step',
+				['get', 'point_count'],
 				clusterColors[0],
 				clusterThresholds[0],
 				clusterColors[1],
 				clusterThresholds[1],
-				clusterColors[2],
+				clusterColors[2]
 			]);
-			map.setPaintProperty(clusterLayerId, "circle-radius", [
-				"step",
-				["get", "point_count"],
+			map.setPaintProperty(clusterLayerId, 'circle-radius', [
+				'step',
+				['get', 'point_count'],
 				20,
 				clusterThresholds[0],
 				30,
 				clusterThresholds[1],
-				40,
+				40
 			]);
 		}
 
 		// Update unclustered point layer color
 		if (map.getLayer(unclusteredLayerId)) {
-			map.setPaintProperty(unclusteredLayerId, "circle-color", pointColor);
+			map.setPaintProperty(unclusteredLayerId, 'circle-color', pointColor);
 		}
 	});
 
@@ -207,7 +207,7 @@
 			}
 		) => {
 			const features = map.queryRenderedFeatures(e.point, {
-				layers: [clusterLayerId],
+				layers: [clusterLayerId]
 			});
 			if (!features.length) return;
 
@@ -224,7 +224,7 @@
 				const zoom = await source.getClusterExpansionZoom(clusterId);
 				map.easeTo({
 					center: coordinates,
-					zoom,
+					zoom
 				});
 			}
 		};
@@ -240,7 +240,7 @@
 			const feature = e.features[0];
 			const coordinates = (feature.geometry as GeoJSON.Point).coordinates.slice() as [
 				number,
-				number,
+				number
 			];
 
 			// Handle world copies
@@ -253,34 +253,34 @@
 
 		// Cursor style handlers
 		const handleMouseEnterCluster = () => {
-			map.getCanvas().style.cursor = "pointer";
+			map.getCanvas().style.cursor = 'pointer';
 		};
 		const handleMouseLeaveCluster = () => {
-			map.getCanvas().style.cursor = "";
+			map.getCanvas().style.cursor = '';
 		};
 		const handleMouseEnterPoint = () => {
 			if (onpointclick) {
-				map.getCanvas().style.cursor = "pointer";
+				map.getCanvas().style.cursor = 'pointer';
 			}
 		};
 		const handleMouseLeavePoint = () => {
-			map.getCanvas().style.cursor = "";
+			map.getCanvas().style.cursor = '';
 		};
 
-		map.on("click", clusterLayerId, handleClusterClick);
-		map.on("click", unclusteredLayerId, handlePointClick);
-		map.on("mouseenter", clusterLayerId, handleMouseEnterCluster);
-		map.on("mouseleave", clusterLayerId, handleMouseLeaveCluster);
-		map.on("mouseenter", unclusteredLayerId, handleMouseEnterPoint);
-		map.on("mouseleave", unclusteredLayerId, handleMouseLeavePoint);
+		map.on('click', clusterLayerId, handleClusterClick);
+		map.on('click', unclusteredLayerId, handlePointClick);
+		map.on('mouseenter', clusterLayerId, handleMouseEnterCluster);
+		map.on('mouseleave', clusterLayerId, handleMouseLeaveCluster);
+		map.on('mouseenter', unclusteredLayerId, handleMouseEnterPoint);
+		map.on('mouseleave', unclusteredLayerId, handleMouseLeavePoint);
 
 		return () => {
-			map.off("click", clusterLayerId, handleClusterClick);
-			map.off("click", unclusteredLayerId, handlePointClick);
-			map.off("mouseenter", clusterLayerId, handleMouseEnterCluster);
-			map.off("mouseleave", clusterLayerId, handleMouseLeaveCluster);
-			map.off("mouseenter", unclusteredLayerId, handleMouseEnterPoint);
-			map.off("mouseleave", unclusteredLayerId, handleMouseLeavePoint);
+			map.off('click', clusterLayerId, handleClusterClick);
+			map.off('click', unclusteredLayerId, handlePointClick);
+			map.off('mouseenter', clusterLayerId, handleMouseEnterCluster);
+			map.off('mouseleave', clusterLayerId, handleMouseLeaveCluster);
+			map.off('mouseenter', unclusteredLayerId, handleMouseEnterPoint);
+			map.off('mouseleave', unclusteredLayerId, handleMouseLeavePoint);
 		};
 	});
 </script>

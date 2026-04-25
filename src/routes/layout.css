@@ -1,7 +1,7 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn-svelte/tailwind.css";
-@import "@fontsource-variable/geist";
+@import 'tw-animate-css';
+@import 'shadcn-svelte/tailwind.css';
+@import '@fontsource-variable/geist';
 
 @custom-variant dark (&:is(.dark *));
 @plugin '@tailwindcss/typography';
@@ -140,7 +140,7 @@
 		@apply font-sans;
 	}
 	.maplibregl-popup-content {
-		@apply bg-transparent! shadow-none! p-0! rounded-none!;
+		@apply rounded-none! bg-transparent! p-0! shadow-none!;
 	}
 	.maplibregl-popup-tip {
 		@apply hidden!;
