@@ -19,6 +19,7 @@
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Mail from '@lucide/svelte/icons/mail';
 	import Icon from '@iconify/svelte';
 	import type { PageData } from './$types';
 
@@ -177,14 +178,23 @@
 				<span class="opacity-70">· updated {fmtUpdatedAt(data.generatedAt)}</span>
 			{/if}
 		</div>
-		<a
-			href="https://ko-fi.com/xiscosc"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="inline-flex items-center gap-1.5 rounded-full bg-[#ff5e5b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform hover:scale-105 hover:bg-[#ff5e5b]/90"
-		>
-			<Icon icon="simple-icons:kofi" width="14" height="14" />
-			Buy me a coffee
-		</a>
+		<div class="flex flex-wrap items-center gap-2">
+			<a
+				href="mailto:xiscosastre@gmail.com"
+				class="inline-flex items-center gap-1.5 rounded-full border bg-card/85 px-3 py-1.5 text-xs font-semibold shadow-sm transition-transform hover:scale-105 hover:text-foreground"
+			>
+				<Mail class="size-3.5" />
+				Contact
+			</a>
+			<a
+				href="https://ko-fi.com/xiscosc"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="inline-flex items-center gap-1.5 rounded-full bg-[#ff5e5b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform hover:scale-105 hover:bg-[#ff5e5b]/90"
+			>
+				<Icon icon="simple-icons:kofi" width="14" height="14" />
+				Buy me a coffee
+			</a>
+		</div>
 	</footer>
 </main>
