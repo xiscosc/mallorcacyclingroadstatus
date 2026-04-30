@@ -193,9 +193,10 @@
 			<Icon icon="simple-icons:komoot" width="16" height="16" style="color: #006341" />
 			<span>Komoot tour URL</span>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item onSelect={() => (stravaOpen = true)}>
+		<DropdownMenu.Item disabled>
 			<Icon icon="simple-icons:strava" width="16" height="16" style="color: #fc4c02" />
 			<span>Strava route URL</span>
+			<span class="ml-auto text-xs text-muted-foreground">Soon</span>
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
