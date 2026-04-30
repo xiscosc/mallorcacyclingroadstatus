@@ -5,3 +5,8 @@ CONSELL_LINES_URL=
 #   https://developers.cloudflare.com/turnstile/troubleshooting/testing/
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET=
+# Strava OAuth app credentials. Create one at https://www.strava.com/settings/api
+# Set the "Authorization Callback Domain" to `localhost` for dev,
+# `mallorcacyclingroads.cc` for prod.
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=

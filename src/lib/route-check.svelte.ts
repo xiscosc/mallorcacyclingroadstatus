@@ -1,5 +1,6 @@
 import { deserialize } from '$app/forms';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
+import { fetchStravaRouteGpx, parseStravaUrl } from './strava';
 import type { Incident } from '$lib/incidents';
 
 /**
@@ -66,6 +67,32 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		}
 	}
 
+	async function loadStravaRouteId(routeId: string, accessToken: string): Promise<void> {
+		error = null;
+		track = null;
+		affected = null;
+		isProcessing = true;
+		try {
+			const gpx = await fetchStravaRouteGpx(routeId, accessToken.trim());
+			await checkTrack(parseGpx(gpx));
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to load Strava route';
+		} finally {
+			isProcessing = false;
+		}
+	}
+
+	async function loadStrava(url: string, accessToken: string): Promise<void> {
+		const parsed = parseStravaUrl(url);
+		if (!parsed) {
+			error = 'Not a valid Strava route URL';
+			track = null;
+			affected = null;
+			return;
+		}
+		await loadStravaRouteId(parsed.routeId, accessToken);
+	}
+
 	function clear(): void {
 		track = null;
 		affected = null;
@@ -90,6 +117,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		},
 		loadGpx,
 		loadKomoot,
+		loadStrava,
+		loadStravaRouteId,
 		clear
 	};
 }

@@ -1,14 +1,27 @@
 import { readIncidents } from '$lib/server/incidents-store';
 import { fetchKomootTour, parseKomootUrl } from '$lib/server/komoot';
+import { STRAVA_ATHLETE_ID_COOKIE, STRAVA_TOKEN_COOKIE } from '$lib/server/strava-oauth';
 import { verifyTurnstile } from '$lib/server/turnstile';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ platform }) => {
+export const load: PageServerLoad = async ({ platform, cookies }) => {
 	const incidents = await readIncidents(platform?.env.INCIDENTS, platform?.caches.default);
+
+	let stravaToken = cookies.get(STRAVA_TOKEN_COOKIE) ?? null;
+	const stravaAthleteId = cookies.get(STRAVA_ATHLETE_ID_COOKIE) ?? null;
+	// A token without an athlete id is unusable (we can't list routes), so
+	// drop it and force a fresh OAuth dance.
+	if (stravaToken && !stravaAthleteId) {
+		cookies.delete(STRAVA_TOKEN_COOKIE, { path: '/' });
+		stravaToken = null;
+	}
+
 	return {
 		...incidents,
-		turnstileSiteKey: platform?.env.TURNSTILE_SITE_KEY ?? ''
+		turnstileSiteKey: platform?.env.TURNSTILE_SITE_KEY ?? '',
+		stravaToken,
+		stravaAthleteId
 	};
 };
 

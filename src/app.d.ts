@@ -31,6 +31,8 @@ declare global {
 				CONSELL_LINES_URL: string;
 				TURNSTILE_SITE_KEY: string;
 				TURNSTILE_SECRET: string;
+				STRAVA_CLIENT_ID: string;
+				STRAVA_CLIENT_SECRET: string;
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };

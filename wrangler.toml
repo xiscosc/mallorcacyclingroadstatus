@@ -29,3 +29,6 @@ enabled = false
 
 [vars]
 TURNSTILE_SITE_KEY="0x4AAAAAADCnu_c4A7KUyEUg"
+# STRAVA_CLIENT_ID is public (it's part of the OAuth authorize URL).
+# STRAVA_CLIENT_SECRET is set via `wrangler secret put STRAVA_CLIENT_SECRET`.
+STRAVA_CLIENT_ID="232879"

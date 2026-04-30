@@ -73,7 +73,7 @@
 						<span class="font-medium text-foreground">{incidents.length}</span>
 						active road closure{incidents.length === 1 ? '' : 's'} on Mallorca's cycling roads.
 					{/if}
-					Upload a GPX or paste a Komoot URL to see if your ride is affected.
+					Upload a GPX or paste a Komoot or Strava URL to see if your ride is affected.
 				</p>
 			</div>
 			<Button
@@ -92,7 +92,12 @@
 		</div>
 
 		<div class="relative mt-6">
-			<RouteCheckMenu {checker} turnstileSiteKey={data.turnstileSiteKey} />
+			<RouteCheckMenu
+				{checker}
+				turnstileSiteKey={data.turnstileSiteKey}
+				stravaToken={data.stravaToken}
+				stravaAthleteId={data.stravaAthleteId}
+			/>
 		</div>
 	</section>
 
