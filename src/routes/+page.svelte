@@ -16,6 +16,7 @@
 	import RouteCheckBanner from '$lib/components/route-check-banner.svelte';
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
@@ -190,11 +191,11 @@
 		</div>
 		<div class="flex flex-wrap items-center gap-2">
 			<a
-				href="mailto:xiscosastre@gmail.com"
+				href={resolve('/support')}
 				class="inline-flex items-center gap-1.5 rounded-full border bg-card/85 px-3 py-1.5 text-xs font-semibold shadow-sm transition-transform hover:scale-105 hover:text-foreground"
 			>
 				<Mail class="size-3.5" />
-				Contact
+				Support
 			</a>
 			<a
 				href="https://ko-fi.com/xiscosc"
