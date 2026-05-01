@@ -63,6 +63,10 @@ Two entry points feed a single reactive checker (`src/lib/route-check.svelte.ts`
 - Map rendering uses **MapLibre GL** wrapped by Svelte components in `$lib/components/ui/map/` (`Map`, `MapRoute`, `MapMarker`, `MapControls`, popup/tooltip helpers). Theme syncs with the `theme` store and Tailwind's `dark`/`light` classes on `<html>`.
 - Tailwind v4 via `@tailwindcss/vite`; the stylesheet lives at `src/routes/layout.css` (also referenced by `prettier-plugin-tailwindcss` and `components.json`).
 
+### Static pages
+
+`src/routes/support/+page.svelte` is the public support / contact page (linked from the homepage footer and required by Strava's API terms). It documents the contact email and the project's data-handling stance: GPX is parsed client-side, Komoot URLs are fetched server-side without persistence, and Strava OAuth tokens live only in httpOnly cookies on the user's browser. Keep that page in sync with any change to how user-supplied data is handled. Cross-route links must use `resolve()` from `$app/paths` (the `svelte/no-navigation-without-resolve` lint rule is enforced).
+
 ### Path aliases
 
 Standard SvelteKit: `$lib` → `src/lib`, `$app/*` from the runtime. `tsconfig.json` extends `.svelte-kit/tsconfig.json`, so run `svelte-kit sync` (or `bun run check`) if alias resolution looks broken after changing config.
