@@ -8,7 +8,9 @@
 	const description =
 		"Check live road closures on Mallorca's cycling roads. Upload a GPX or paste a Komoot tour URL to see if your ride is affected.";
 	const url = 'https://mallorcacyclingroads.cc/';
-	const image = 'https://mallorcacyclingroads.cc/og-image.png';
+	const image = 'https://mallorcacyclingroads.cc/og-image.jpg';
+	const imageWidth = '1200';
+	const imageHeight = '1031';
 </script>
 
 <svelte:head>
@@ -21,6 +23,10 @@
 	<meta property="og:title" content={title} />
 	<meta property="og:description" content={description} />
 	<meta property="og:image" content={image} />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta property="og:image:width" content={imageWidth} />
+	<meta property="og:image:height" content={imageHeight} />
+	<meta property="og:image:alt" content={title} />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:url" content={url} />
