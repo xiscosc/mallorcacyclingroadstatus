@@ -195,7 +195,7 @@
 				class="inline-flex items-center gap-1.5 rounded-full border bg-card/85 px-3 py-1.5 text-xs font-semibold shadow-sm transition-transform hover:scale-105 hover:text-foreground"
 			>
 				<Mail class="size-3.5" />
-				Support
+				Contact & Support
 			</a>
 			<a
 				href="https://ko-fi.com/xiscosc"

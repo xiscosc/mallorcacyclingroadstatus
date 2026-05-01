@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import * as Accordion from '$lib/components/ui/accordion';
+	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
+	import { CYCLING_ROAD_REGIONS, CYCLING_ROADS } from '$lib/cycling-roads';
 	import { theme, toggleTheme } from '$lib/theme';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
@@ -8,6 +11,7 @@
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 
 	const supportEmail = 'xiscosastre@gmail.com';
+	const totalRoads = CYCLING_ROADS.length;
 </script>
 
 <svelte:head>
@@ -91,6 +95,50 @@
 				crosses an active closure. The whole site is open to anyone — no account required.
 			</p>
 		</div>
+	</section>
+
+	<section
+		class="flex flex-col gap-3 rounded-2xl bg-card/80 p-6 shadow-sm ring-1 ring-border/70 backdrop-blur-sm sm:p-8"
+	>
+		<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+			<h2 class="text-xl font-semibold tracking-tight">Roads we monitor</h2>
+			<span class="text-xs text-muted-foreground">
+				{totalRoads} roads across {CYCLING_ROAD_REGIONS.length} regions
+			</span>
+		</div>
+		<p class="text-sm text-muted-foreground">
+			These are the Mallorca roads (Ma-… codes from the Consell de Mallorca's network) we currently
+			watch for closures. Motorways and tunnels where bikes are not allowed are excluded.
+		</p>
+		<Accordion.Root type="single" class="w-full">
+			{#each CYCLING_ROAD_REGIONS as region (region.id)}
+				<Accordion.Item value={region.id}>
+					<Accordion.Trigger>
+						<span class="flex flex-1 items-center gap-3">
+							<span class="font-medium text-foreground">{region.name}</span>
+							<span class="text-xs font-normal text-muted-foreground"
+								>{region.roads.length} roads</span
+							>
+						</span>
+					</Accordion.Trigger>
+					<Accordion.Content>
+						<p class="mb-3 text-xs text-muted-foreground">{region.description}</p>
+						<div class="flex flex-wrap gap-1.5">
+							{#each region.roads as road (road)}
+								<Badge variant="secondary" class="font-mono">{road}</Badge>
+							{/each}
+						</div>
+					</Accordion.Content>
+				</Accordion.Item>
+			{/each}
+		</Accordion.Root>
+		<p class="text-sm text-muted-foreground">
+			Missing a road you ride? Email
+			<a href="mailto:{supportEmail}" class="underline underline-offset-2 hover:text-foreground"
+				>{supportEmail}</a
+			>
+			and I'll add it to the list.
+		</p>
 	</section>
 
 	<section
