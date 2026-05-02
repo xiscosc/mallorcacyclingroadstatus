@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onDestroy, onMount } from 'svelte';
 	import MapLibreGL from 'maplibre-gl';
+	import { browser } from '$app/environment';
 	import { cn } from '$lib/utils.js';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Minus from '@lucide/svelte/icons/minus';
 	import Locate from '@lucide/svelte/icons/locate';
 	import Maximize from '@lucide/svelte/icons/maximize';
+	import Minimize from '@lucide/svelte/icons/minimize';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 
 	interface Props {
@@ -35,7 +37,23 @@
 
 	let waitingForLocation = $state(false);
 	let compassElement: SVGSVGElement | null = $state(null);
+	let isFullscreen = $state(false);
 	const loaded = $derived(mapCtx.isLoaded());
+
+	function updateFullscreenState() {
+		isFullscreen = browser && document.fullscreenElement !== null;
+	}
+
+	onMount(() => {
+		if (!browser) return;
+		updateFullscreenState();
+		document.addEventListener('fullscreenchange', updateFullscreenState);
+	});
+
+	onDestroy(() => {
+		if (!browser) return;
+		document.removeEventListener('fullscreenchange', updateFullscreenState);
+	});
 
 	const positionClasses = {
 		'top-left': 'top-2 left-2',
@@ -203,11 +221,15 @@
 			>
 				<button
 					onclick={handleFullscreen}
-					aria-label="Toggle fullscreen"
+					aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
 					type="button"
 					class="flex size-8 items-center justify-center transition-colors hover:bg-accent dark:hover:bg-accent/40"
 				>
-					<Maximize class="size-4" />
+					{#if isFullscreen}
+						<Minimize class="size-4" />
+					{:else}
+						<Maximize class="size-4" />
+					{/if}
 				</button>
 			</div>
 		{/if}

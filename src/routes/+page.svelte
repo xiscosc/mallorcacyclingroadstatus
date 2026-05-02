@@ -188,7 +188,7 @@
 					</MapMarker>
 				{/if}
 			{/each}
-			<MapControls />
+			<MapControls showFullscreen />
 		</Map>
 	</Card>
 
