@@ -10,7 +10,13 @@ export default defineConfig({
 		paraglideVitePlugin({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide',
-			strategy: ['cookie', 'preferredLanguage', 'url', 'baseLocale']
+			strategy: ['cookie', 'preferredLanguage', 'url', 'baseLocale'],
+			// Treat these paths as locale-agnostic — no auto-redirect, no de-localization.
+			// They live at a single canonical URL.
+			routeStrategies: [
+				{ match: '/sitemap.xml', exclude: true },
+				{ match: '/robots.txt', exclude: true }
+			]
 		})
 	]
 });
