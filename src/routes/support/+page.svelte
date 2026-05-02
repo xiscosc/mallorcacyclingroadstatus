@@ -15,10 +15,20 @@
 </script>
 
 <svelte:head>
-	<title>Support · Mallorca Cycling Road Status</title>
+	<title>Support & Contact · Mallorca Cycling Road Status</title>
 	<meta
 		name="description"
-		content="Support and contact information for Mallorca Cycling Road Status."
+		content="Contact the Mallorca Cycling Road Status maintainer, learn how your data is handled, and see the list of cycling roads we monitor."
+	/>
+	<meta property="og:title" content="Support & Contact · Mallorca Cycling Road Status" />
+	<meta
+		property="og:description"
+		content="Contact the Mallorca Cycling Road Status maintainer, learn how your data is handled, and see the list of cycling roads we monitor."
+	/>
+	<meta name="twitter:title" content="Support & Contact · Mallorca Cycling Road Status" />
+	<meta
+		name="twitter:description"
+		content="Contact the Mallorca Cycling Road Status maintainer, learn how your data is handled, and see the list of cycling roads we monitor."
 	/>
 </svelte:head>
 

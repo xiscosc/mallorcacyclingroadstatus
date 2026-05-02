@@ -1,3 +1,5 @@
 # allow crawling everything by default
 User-agent: *
-Disallow:
+Disallow: /auth/
+
+Sitemap: https://mallorcacyclingroads.cc/sitemap.xml

@@ -17,6 +17,7 @@
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { SITE_NAME } from '$lib/seo';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
@@ -47,7 +48,20 @@
 		[IncidentType.Maintenance]: '🚧',
 		[IncidentType.Other]: '⚠️'
 	};
+
+	const pageTitle = `${SITE_NAME} · Live road closures & GPX route checker`;
+	const pageDescription =
+		"Live road closures on Mallorca's road-cycling network. Upload a GPX file or paste a Komoot or Strava route URL to see if your ride is affected. Free, updated every few hours.";
 </script>
+
+<svelte:head>
+	<title>{pageTitle}</title>
+	<meta name="description" content={pageDescription} />
+	<meta property="og:title" content={pageTitle} />
+	<meta property="og:description" content={pageDescription} />
+	<meta name="twitter:title" content={pageTitle} />
+	<meta name="twitter:description" content={pageDescription} />
+</svelte:head>
 
 <main class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6">
 	<section
