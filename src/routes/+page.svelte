@@ -14,10 +14,11 @@
 	import { createRouteChecker } from '$lib/route-check.svelte';
 	import RouteCheckMenu from '$lib/components/route-check-menu.svelte';
 	import RouteCheckBanner from '$lib/components/route-check-banner.svelte';
+	import LanguageSwitcher from '$lib/components/language-switcher.svelte';
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
-	import { SITE_NAME } from '$lib/seo';
+	import { m } from '$lib/paraglide/messages';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
@@ -49,9 +50,8 @@
 		[IncidentType.Other]: '⚠️'
 	};
 
-	const pageTitle = `${SITE_NAME} · Live road closures & GPX route checker`;
-	const pageDescription =
-		"Live road closures on Mallorca's road-cycling network. Upload a GPX file or paste a Komoot or Strava route URL to see if your ride is affected. Free, updated every few hours.";
+	const pageTitle = $derived(m.page_title());
+	const pageDescription = $derived(m.page_description());
 </script>
 
 <svelte:head>
@@ -79,31 +79,34 @@
 				<h1
 					class="bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl"
 				>
-					🚲 Mallorca Cycling Road Status
+					{m.home_heading()}
 				</h1>
 				<p class="max-w-prose text-muted-foreground">
 					{#if incidents.length === 0}
-						No active road closures on Mallorca's cycling roads right now.
+						{m.home_no_closures()}
 					{:else}
 						<span class="font-medium text-foreground">{incidents.length}</span>
-						active road closure{incidents.length === 1 ? '' : 's'} on Mallorca's cycling roads.
+						{incidents.length === 1 ? m.home_closures_one() : m.home_closures_other()}
 					{/if}
-					Upload a GPX or paste a Komoot or Strava URL to see if your ride is affected.
+					{m.home_intro()}
 				</p>
 			</div>
-			<Button
-				variant="ghost"
-				size="icon-lg"
-				onclick={toggleTheme}
-				aria-label="Toggle theme"
-				class="shrink-0"
-			>
-				{#if $theme === 'dark'}
-					<Sun class="size-4" />
-				{:else}
-					<Moon class="size-4" />
-				{/if}
-			</Button>
+			<div class="flex shrink-0 items-center gap-1">
+				<LanguageSwitcher />
+				<Button
+					variant="ghost"
+					size="icon-lg"
+					onclick={toggleTheme}
+					aria-label={m.toggle_theme()}
+					class="shrink-0"
+				>
+					{#if $theme === 'dark'}
+						<Sun class="size-4" />
+					{:else}
+						<Moon class="size-4" />
+					{/if}
+				</Button>
+			</div>
 		</div>
 
 		<div class="relative mt-6">
@@ -124,12 +127,12 @@
 		>
 			<span class="flex items-center gap-1.5">
 				<span class="size-2 rounded-full bg-red-500"></span>
-				Road closed
+				{m.legend_road_closed()}
 			</span>
 			{#if checker.track}
 				<span class="flex items-center gap-1.5">
 					<span class="size-2 rounded-full bg-blue-500"></span>
-					Your route
+					{m.legend_your_route()}
 				</span>
 			{/if}
 		</div>
@@ -168,16 +171,18 @@
 									<span class="font-semibold">{incident.roadName}</span>
 									<span class="opacity-70">· {incident.type}</span>
 									{#if incident.isClosed}
-										<span class="text-red-500">· closed</span>
+										<span class="text-red-500">· {m.tooltip_closed()}</span>
 									{/if}
 									{#if incident.onlyClosedOnWeekDays}
-										<span class="text-amber-500">· weekdays only</span>
+										<span class="text-amber-500">· {m.tooltip_weekdays_only()}</span>
 									{/if}
 								</div>
 								<div class="text-[10px] opacity-60">
 									{fmtDate(incident.startDate)} → {fmtDate(incident.endDate)}
 								</div>
-								<div class="text-[10px] opacity-50">via {incident.providerName}</div>
+								<div class="text-[10px] opacity-50">
+									{m.tooltip_via({ provider: incident.providerName })}
+								</div>
 							</div>
 						</MarkerTooltip>
 					</MapMarker>
@@ -189,7 +194,7 @@
 
 	<footer class="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
 		<div class="flex flex-wrap items-center gap-1.5">
-			<span>Data from</span>
+			<span>{m.footer_data_from()}</span>
 			<a
 				href="https://www.conselldemallorca.net/"
 				target="_blank"
@@ -200,7 +205,9 @@
 				<ExternalLink class="size-3" />
 			</a>
 			{#if data.generatedAt}
-				<span class="opacity-70">· updated {fmtUpdatedAt(data.generatedAt)}</span>
+				<span class="opacity-70"
+					>· {m.footer_updated({ time: fmtUpdatedAt(data.generatedAt) })}</span
+				>
 			{/if}
 		</div>
 		<div class="flex flex-wrap items-center gap-2">
@@ -209,7 +216,7 @@
 				class="inline-flex items-center gap-1.5 rounded-full border bg-card/85 px-3 py-1.5 text-xs font-semibold shadow-sm transition-transform hover:scale-105 hover:text-foreground"
 			>
 				<Mail class="size-3.5" />
-				Contact & Support
+				{m.footer_contact()}
 			</a>
 			<a
 				href="https://ko-fi.com/xiscosc"
@@ -218,7 +225,7 @@
 				class="inline-flex items-center gap-1.5 rounded-full bg-[#ff5e5b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform hover:scale-105 hover:bg-[#ff5e5b]/90"
 			>
 				<Icon icon="simple-icons:kofi" width="14" height="14" />
-				Buy me a coffee
+				{m.footer_kofi()}
 			</a>
 		</div>
 	</footer>

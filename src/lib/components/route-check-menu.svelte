@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import type { RouteChecker } from '$lib/route-check.svelte';
 	import { fetchStravaRoutes, type StravaRouteSummary } from '$lib/strava';
+	import { m } from '$lib/paraglide/messages';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -64,7 +65,7 @@
 			stravaRoutes = await fetchStravaRoutes(stravaAthleteId, stravaToken);
 			stravaRoutesLoaded = true;
 		} catch (err) {
-			stravaRoutesError = err instanceof Error ? err.message : 'Failed to load Strava routes';
+			stravaRoutesError = err instanceof Error ? err.message : m.error_failed_load_strava();
 		} finally {
 			stravaRoutesLoading = false;
 		}
@@ -175,10 +176,10 @@
 					<div class="animate-spin">
 						<Loader2 class="size-4" />
 					</div>
-					Checking…
+					{m.check_button_processing()}
 				{:else}
 					<Route class="size-4" />
-					Check route
+					{m.check_button_label()}
 					<ChevronDown class="size-4 opacity-80" />
 				{/if}
 			</Button>
@@ -187,16 +188,16 @@
 	<DropdownMenu.Content align="end" collisionPadding={16} class="w-56">
 		<DropdownMenu.Item onSelect={() => fileInput.click()}>
 			<Upload />
-			<span>Upload GPX file</span>
+			<span>{m.check_menu_upload_gpx()}</span>
 		</DropdownMenu.Item>
 		<DropdownMenu.Item onSelect={() => (komootOpen = true)}>
 			<Icon icon="simple-icons:komoot" width="16" height="16" style="color: #006341" />
-			<span>Komoot tour URL</span>
+			<span>{m.check_menu_komoot()}</span>
 		</DropdownMenu.Item>
 		<DropdownMenu.Item disabled>
 			<Icon icon="simple-icons:strava" width="16" height="16" style="color: #fc4c02" />
-			<span>Strava route URL</span>
-			<span class="ml-auto text-xs text-muted-foreground">Soon</span>
+			<span>{m.check_menu_strava()}</span>
+			<span class="ml-auto text-xs text-muted-foreground">{m.check_menu_soon()}</span>
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
@@ -206,16 +207,15 @@
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				<Icon icon="simple-icons:komoot" width="20" height="20" style="color: #006341" />
-				Check a Komoot tour
+				{m.komoot_dialog_title()}
 			</Dialog.Title>
 			<Dialog.Description>
-				Paste any Komoot tour URL — including the <code class="text-xs">share_token</code> for private
-				tours.
+				{m.komoot_dialog_description()}
 			</Dialog.Description>
 		</Dialog.Header>
 		<form onsubmit={submitKomoot} class="flex flex-col gap-4">
 			<div class="flex flex-col gap-2">
-				<Label for="komoot-url">Tour URL</Label>
+				<Label for="komoot-url">{m.komoot_dialog_url_label()}</Label>
 				<Input
 					id="komoot-url"
 					type="url"
@@ -229,10 +229,12 @@
 			<Dialog.Footer>
 				<Dialog.Close>
 					{#snippet child({ props })}
-						<Button {...props} variant="ghost">Cancel</Button>
+						<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
 					{/snippet}
 				</Dialog.Close>
-				<Button type="submit" disabled={!komootUrl.trim() || !turnstileToken}>Check tour</Button>
+				<Button type="submit" disabled={!komootUrl.trim() || !turnstileToken}>
+					{m.komoot_dialog_submit()}
+				</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
@@ -243,15 +245,13 @@
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				<Icon icon="simple-icons:strava" width="20" height="20" style="color: #fc4c02" />
-				Check a Strava route
+				{m.strava_dialog_title()}
 			</Dialog.Title>
 			<Dialog.Description>
 				{#if stravaToken}
-					Pick one of your routes or paste a Strava route URL. The GPX is fetched directly from
-					Strava in your browser — nothing is sent to our server.
+					{m.strava_dialog_description_connected()}
 				{:else}
-					Connect your Strava account to fetch routes. Your session lasts a few hours, after which
-					you'll be asked to reconnect.
+					{m.strava_dialog_description_disconnected()}
 				{/if}
 			</Dialog.Description>
 		</Dialog.Header>
@@ -259,13 +259,13 @@
 			<div class="flex flex-col gap-4">
 				<div class="flex flex-col gap-2">
 					<div class="flex items-center justify-between">
-						<Label>Your routes</Label>
+						<Label>{m.strava_dialog_routes_label()}</Label>
 						<Button
 							variant="ghost"
 							size="sm"
 							onclick={loadStravaRoutes}
 							disabled={stravaRoutesLoading}
-							aria-label="Refresh routes"
+							aria-label={m.strava_dialog_refresh_routes()}
 							class="h-7 px-2"
 						>
 							<RefreshCw class="size-3.5 {stravaRoutesLoading ? 'animate-spin' : ''}" />
@@ -280,7 +280,7 @@
 							{/each}
 						</div>
 					{:else if stravaRoutesLoaded && stravaRoutes.length === 0}
-						<p class="text-xs text-muted-foreground">You don't have cycling routes.</p>
+						<p class="text-xs text-muted-foreground">{m.strava_dialog_no_routes()}</p>
 					{:else if stravaRoutes.length > 0}
 						<ScrollArea class="h-64 rounded-md border">
 							<ul class="flex flex-col">
@@ -321,13 +321,13 @@
 
 				<div class="flex items-center gap-3">
 					<Separator class="flex-1" />
-					<span class="text-xs text-muted-foreground">or paste a URL</span>
+					<span class="text-xs text-muted-foreground">{m.strava_dialog_or_paste_url()}</span>
 					<Separator class="flex-1" />
 				</div>
 
 				<form onsubmit={submitStrava} class="flex flex-col gap-4">
 					<div class="flex flex-col gap-2">
-						<Label for="strava-url">Route URL</Label>
+						<Label for="strava-url">{m.strava_dialog_url_label()}</Label>
 						<Input
 							id="strava-url"
 							type="url"
@@ -339,10 +339,10 @@
 					<Dialog.Footer>
 						<Dialog.Close>
 							{#snippet child({ props })}
-								<Button {...props} variant="ghost">Cancel</Button>
+								<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
 							{/snippet}
 						</Dialog.Close>
-						<Button type="submit" disabled={!stravaUrl.trim()}>Check route</Button>
+						<Button type="submit" disabled={!stravaUrl.trim()}>{m.strava_dialog_submit()}</Button>
 					</Dialog.Footer>
 				</form>
 			</div>
@@ -353,12 +353,12 @@
 					class="inline-flex items-center justify-center gap-2 rounded-md bg-[#fc4c02] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#fc4c02]/90"
 				>
 					<Icon icon="simple-icons:strava" width="16" height="16" />
-					Connect with Strava
+					{m.strava_dialog_connect()}
 				</a>
 				<Dialog.Footer>
 					<Dialog.Close>
 						{#snippet child({ props })}
-							<Button {...props} variant="ghost">Cancel</Button>
+							<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
 						{/snippet}
 					</Dialog.Close>
 				</Dialog.Footer>

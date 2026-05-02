@@ -1,31 +1,66 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { SITE_NAME, SITE_ORIGIN, OG_IMAGE } from '$lib/seo';
+	import {
+		baseLocale,
+		deLocalizeUrl,
+		getLocale,
+		locales,
+		localizeUrl
+	} from '$lib/paraglide/runtime';
 	import './layout.css';
 
 	let { children } = $props();
 
-	const canonical = $derived(`${SITE_ORIGIN}${page.url.pathname}`);
+	const OG_LOCALE: Record<string, string> = {
+		en: 'en_GB',
+		de: 'de_DE',
+		es: 'es_ES',
+		ca: 'ca_ES'
+	};
+	const HREFLANG: Record<string, string> = {
+		en: 'en',
+		de: 'de',
+		es: 'es',
+		ca: 'ca'
+	};
 
-	const jsonLd = {
+	const locale = $derived(getLocale());
+	const ogLocale = $derived(OG_LOCALE[locale] ?? 'en_GB');
+
+	// Strip the locale prefix so we can re-localize for each alternate.
+	const basePath = $derived(deLocalizeUrl(`${SITE_ORIGIN}${page.url.pathname}`).pathname);
+	const canonical = $derived(localizeUrl(`${SITE_ORIGIN}${basePath}`, { locale }).href);
+	const alternates = $derived(
+		locales.map((l) => ({
+			locale: l,
+			href: localizeUrl(`${SITE_ORIGIN}${basePath}`, { locale: l }).href
+		}))
+	);
+	const xDefaultHref = $derived(
+		localizeUrl(`${SITE_ORIGIN}${basePath}`, { locale: baseLocale }).href
+	);
+
+	const homeUrl = $derived(localizeUrl(`${SITE_ORIGIN}/`, { locale }).href);
+	const jsonLd = $derived({
 		'@context': 'https://schema.org',
 		'@graph': [
 			{
 				'@type': 'WebSite',
 				'@id': `${SITE_ORIGIN}/#website`,
-				url: `${SITE_ORIGIN}/`,
+				url: homeUrl,
 				name: SITE_NAME,
-				inLanguage: 'en'
+				inLanguage: locale
 			},
 			{
 				'@type': 'WebApplication',
 				'@id': `${SITE_ORIGIN}/#webapp`,
 				name: SITE_NAME,
-				url: `${SITE_ORIGIN}/`,
+				url: homeUrl,
 				applicationCategory: 'TravelApplication',
 				operatingSystem: 'Any',
 				browserRequirements: 'Requires JavaScript and HTML5.',
-				inLanguage: 'en',
+				inLanguage: locale,
 				isAccessibleForFree: true,
 				offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
 				featureList: [
@@ -45,13 +80,19 @@
 				}
 			}
 		]
-	};
+	});
 
-	const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(jsonLd)}</` + `script>`;
+	const jsonLdScript = $derived(
+		`<script type="application/ld+json">${JSON.stringify(jsonLd)}</` + `script>`
+	);
 </script>
 
 <svelte:head>
 	<link rel="canonical" href={canonical} />
+	{#each alternates as alt (alt.locale)}
+		<link rel="alternate" hreflang={HREFLANG[alt.locale]} href={alt.href} />
+	{/each}
+	<link rel="alternate" hreflang="x-default" href={xDefaultHref} />
 	<meta name="robots" content="index, follow, max-image-preview:large" />
 	<meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)" />
 	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
@@ -61,7 +102,7 @@
 
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content={SITE_NAME} />
-	<meta property="og:locale" content="en_GB" />
+	<meta property="og:locale" content={ogLocale} />
 	<meta property="og:url" content={canonical} />
 	<meta property="og:image" content={OG_IMAGE.url} />
 	<meta property="og:image:type" content="image/jpeg" />

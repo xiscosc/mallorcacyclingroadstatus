@@ -2,6 +2,7 @@
 	import type { RouteChecker } from '$lib/route-check.svelte';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
+	import { m } from '$lib/paraglide/messages';
 	import { DateTime } from 'luxon';
 	import CircleCheck from '@lucide/svelte/icons/circle-check';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
@@ -19,12 +20,12 @@
 {#if checker.error}
 	<Alert.Root variant="destructive" class="relative pr-10">
 		<X class="size-4" />
-		<Alert.Title>Route error</Alert.Title>
+		<Alert.Title>{m.banner_route_error_title()}</Alert.Title>
 		<Alert.Description>{checker.error}</Alert.Description>
 		<button
 			type="button"
 			onclick={checker.clear}
-			aria-label="Dismiss"
+			aria-label={m.banner_dismiss()}
 			class="absolute top-2 right-2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
 		>
 			<X class="size-3.5" />
@@ -47,13 +48,15 @@
 
 		<Alert.Title class="font-semibold">
 			{#if ok}
-				Your route is clear
+				{m.banner_route_clear()}
+			{:else if checker.affected.length === 1}
+				{m.banner_route_incidents_one({ count: checker.affected.length })}
 			{:else}
-				{checker.affected.length} incident{checker.affected.length === 1 ? '' : 's'} on your route
+				{m.banner_route_incidents_other({ count: checker.affected.length })}
 			{/if}
 		</Alert.Title>
 		<Alert.Description class="opacity-80">
-			{checker.track.name ?? 'Your route'}
+			{checker.track.name ?? m.banner_route_unnamed()}
 		</Alert.Description>
 
 		{#if !ok}
@@ -66,10 +69,10 @@
 							<span class="font-semibold">{inc.roadName}</span>
 							<Badge variant="outline">{inc.type}</Badge>
 							{#if inc.isClosed}
-								<Badge variant="destructive">Closed</Badge>
+								<Badge variant="destructive">{m.badge_closed()}</Badge>
 							{/if}
 							{#if inc.onlyClosedOnWeekDays}
-								<Badge variant="secondary">Weekdays only</Badge>
+								<Badge variant="secondary">{m.badge_weekdays_only()}</Badge>
 							{/if}
 						</div>
 						{#if fmtRange(inc.startDate, inc.endDate)}
@@ -86,7 +89,7 @@
 		<button
 			type="button"
 			onclick={checker.clear}
-			aria-label="Clear route"
+			aria-label={m.banner_clear_route()}
 			class="absolute top-2 right-2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
 		>
 			<X class="size-3.5" />
