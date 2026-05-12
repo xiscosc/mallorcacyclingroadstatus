@@ -1,42 +1,110 @@
-# sv
+# mallorcacyclingroads.cc
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Live road-closure status for Mallorca's road-cycling network.
 
-## Creating a project
+Upload a GPX file or paste a [Komoot](https://www.komoot.com/) tour URL and the app will tell
+you whether your planned ride crosses an active incident. Incident data is sourced from the
+[Consell de Mallorca](https://www.conselldemallorca.cat/) public feeds, filtered to the roads
+cyclists actually use, and refreshed every six hours.
 
-If you're seeing this, you've probably already done this step. Congrats!
+Live site: <https://mallorcacyclingroads.cc>
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Stack
 
-To recreate this project with the same configuration:
+- [SvelteKit](https://svelte.dev/docs/kit) (Svelte 5, runes mode) + [Tailwind CSS v4](https://tailwindcss.com/)
+- [shadcn-svelte](https://shadcn-svelte.com/) UI primitives
+- [MapLibre GL](https://maplibre.org/) for map rendering
+- [Paraglide JS](https://inlang.com/m/gerre34r/library-inlang-paraglideJs) for i18n (en, de, es, ca)
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) (web + cron in a single worker) with R2 for incident snapshots
+- [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) to gate the Komoot endpoint
+- [Bun](https://bun.sh/) as the package manager
 
-```sh
-# recreate this project
-bun x sv@0.15.1 create --template minimal --types ts --add prettier eslint tailwindcss="plugins:typography" sveltekit-adapter="adapter:auto" --install bun mallorcacyclingmap
-```
+## Getting started
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+Requires Bun (`engine-strict=true` is enforced).
 
 ```sh
-npm run build
+bun install
+cp .dev.vars.example .dev.vars   # fill in the values, see below
+bun run dev
 ```
 
-You can preview the production build with `npm run preview`.
+### Local secrets (`.dev.vars`)
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| Var                   | What it is                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| `CONSELL_POINTS_URL`  | JSONP endpoint with incident metadata (Consell de Mallorca)                                         |
+| `CONSELL_LINES_URL`   | JSONP endpoint with incident geometry (UTM Zone 31N)                                                |
+| `TURNSTILE_SITE_KEY`  | Cloudflare Turnstile site key — use the always-passing test key locally                             |
+| `TURNSTILE_SECRET`    | Cloudflare Turnstile secret — use the always-passing test secret locally                            |
+
+Always-passing Turnstile test keys are documented [here](https://developers.cloudflare.com/turnstile/troubleshooting/testing/).
+
+## Scripts
+
+- `bun run dev` — Vite dev server with Cloudflare `platformProxy` (R2/vars/secrets available via `event.platform`)
+- `bun run build` — production build into `.svelte-kit/cloudflare/`
+- `bun run preview` — preview the production build
+- `bun run check` — `svelte-kit sync` + `svelte-check` (TypeScript + Svelte diagnostics)
+- `bun run lint` — `prettier --check` + `eslint`
+- `bun run format` — `prettier --write`
+
+There is no test suite.
+
+## How it works
+
+### Incidents pipeline
+
+1. A cron trigger (`0 */6 * * *`) runs `runCron` in `src/lib/server/cron.ts`, fetching from every
+   registered `IncidentsProvider`, filtering to the curated `CYCLING_ROADS` whitelist in
+   `src/lib/cycling-roads.ts`, and keeping only closures.
+2. The merged snapshot is written to R2 (`INCIDENTS` binding, key `incidents.json`). The pipeline
+   is partial-failure tolerant: if at least one provider succeeds the snapshot is updated, if
+   they all fail nothing is written and the last-known-good data is preserved.
+3. Reads go through `src/lib/server/incidents-store.ts`, which sits behind a Cloudflare edge
+   cache (1 h TTL). The cache is invalidated after every successful cron write.
+
+Adding a new source = subclass `IncidentsProvider` (`src/lib/server/incidents/provider.ts`) and
+add an instance to `buildProviders` in `cron.ts`. The shared helpers cover JSONP unwrapping and
+UTM Zone 31N → WGS84 conversion.
+
+### Route checking
+
+- **GPX**: parsed entirely client-side in `src/lib/gpx.ts`.
+- **Komoot URL**: posted to the `?/komoot` form action — Komoot's API blocks CORS, so the fetch
+  runs on the server and is gated by Turnstile.
+
+Both feed `findAffectedIncidents`, which does a bbox prefilter (with a meters→degrees pad) and
+then a per-track-point distance check against each incident line (default tolerance 25 m).
+
+### Deployment
+
+The app deploys as a single Cloudflare Worker. `src/worker.ts` re-exports the `fetch` handler
+generated by `@sveltejs/adapter-cloudflare` and adds a `scheduled` handler for the cron.
+`wrangler.toml` defines the R2 binding, cron schedule, custom domain, and public vars; secrets
+are set with `wrangler secret put`.
+
+## Internationalization
+
+Strings live in `messages/<locale>.json` (en, de, es, ca — keys must match across files).
+Paraglide's Vite plugin compiles them into `src/lib/paraglide/` (gitignored). Use `m.<key>()`
+from `$lib/paraglide/messages` in components.
+
+English is served at `/`; other locales are prefixed (`/de/`, `/es/`, `/ca/`). Locale resolution
+order is `cookie → preferredLanguage → url → baseLocale`. See `CLAUDE.md` for the full notes on
+the reroute hook, non-localized paths (sitemap, robots), and the language switcher.
+
+## Project conventions
+
+- **Svelte 5 runes mode is forced** outside `node_modules`. Prefer `$state`, `$derived`, `$props`,
+  `$effect`. Stateful modules use the `.svelte.ts` suffix.
+- **shadcn-svelte CLI** for new UI primitives, don't hand-roll them.
+- **Luxon** for all date/time work; user-facing times are displayed in `Europe/Madrid`.
+- **Prettier**: tabs, single quotes, no trailing commas, 100-col print width. Run `bun run format`
+  before committing.
+
+For deeper architectural notes, see [`CLAUDE.md`](./CLAUDE.md).
+
+## License
+
+No license file is currently included. Please open an issue if you'd like to reuse the code.
