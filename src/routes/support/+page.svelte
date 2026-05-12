@@ -9,10 +9,11 @@
 	import LanguageSwitcher from '$lib/components/language-switcher.svelte';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
-	import Mail from '@lucide/svelte/icons/mail';
+	import Link from '@lucide/svelte/icons/link';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 
-	const supportEmail = 'xiscosastre@gmail.com';
+	const contactUrl = 'https://linktr.ee/xiscosc';
+	const contactLabel = 'linktr.ee/xiscosc';
 	const totalRoads = CYCLING_ROADS.length;
 
 	const REGION_NAME: Record<string, () => string> = {
@@ -98,11 +99,13 @@
 		</p>
 		<div>
 			<a
-				href="mailto:{supportEmail}"
+				href={contactUrl}
+				target="_blank"
+				rel="noopener noreferrer"
 				class="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm font-semibold shadow-sm transition-transform hover:scale-105 hover:text-foreground"
 			>
-				<Mail class="size-4" />
-				{supportEmail}
+				<Link class="size-4" />
+				{contactLabel}
 			</a>
 		</div>
 	</section>
@@ -163,8 +166,11 @@
 		</Accordion.Root>
 		<p class="text-sm text-muted-foreground">
 			{m.support_roads_missing_intro()}
-			<a href="mailto:{supportEmail}" class="underline underline-offset-2 hover:text-foreground"
-				>{supportEmail}</a
+			<a
+				href={contactUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="underline underline-offset-2 hover:text-foreground">{contactLabel}</a
 			>
 			{m.support_roads_missing_outro()}
 		</p>
@@ -202,8 +208,11 @@
 			</ul>
 			<p>
 				{m.support_privacy_outro_intro()}
-				<a href="mailto:{supportEmail}" class="underline underline-offset-2 hover:text-foreground"
-					>{supportEmail}</a
+				<a
+					href={contactUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="underline underline-offset-2 hover:text-foreground">{contactLabel}</a
 				>.
 			</p>
 		</div>
