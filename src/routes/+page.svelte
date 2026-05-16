@@ -10,6 +10,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { IncidentType } from '$lib/incidents';
+	import { isBusOnlyClosure } from '$lib/cycling-roads';
 	import { theme, toggleTheme } from '$lib/theme';
 	import { createRouteChecker } from '$lib/route-check.svelte';
 	import RouteCheckMenu from '$lib/components/route-check-menu.svelte';
@@ -52,6 +53,8 @@
 
 	const pageTitle = $derived(m.page_title());
 	const pageDescription = $derived(m.page_description());
+
+	const hasBusOnly = $derived(incidents.some(isBusOnlyClosure));
 </script>
 
 <svelte:head>
@@ -129,6 +132,12 @@
 				<span class="size-2 rounded-full bg-red-500"></span>
 				{m.legend_road_closed()}
 			</span>
+			{#if hasBusOnly}
+				<span class="flex items-center gap-1.5">
+					<span class="size-2 rounded-full bg-emerald-500"></span>
+					{m.legend_road_bus_only()}
+				</span>
+			{/if}
 			{#if checker.track}
 				<span class="flex items-center gap-1.5">
 					<span class="size-2 rounded-full bg-blue-500"></span>
@@ -142,7 +151,8 @@
 			{/if}
 			{#each incidents as incident (incident.id)}
 				{@const isAffected = checker.affectedIds.has(incident.id)}
-				{@const color = incident.isClosed ? '#ef4444' : '#f59e0b'}
+				{@const busOnly = isBusOnlyClosure(incident)}
+				{@const color = busOnly ? '#10b981' : incident.isClosed ? '#ef4444' : '#f59e0b'}
 				{#each incident.coordinates as line, i (i)}
 					<MapRoute
 						coordinates={line}
@@ -170,7 +180,9 @@
 									<span>{EMOJI[incident.type]}</span>
 									<span class="font-semibold">{incident.roadName}</span>
 									<span class="opacity-70">· {incident.type}</span>
-									{#if incident.isClosed}
+									{#if busOnly}
+										<span class="text-emerald-500">· {m.tooltip_bus_only()}</span>
+									{:else if incident.isClosed}
 										<span class="text-red-500">· {m.tooltip_closed()}</span>
 									{/if}
 									{#if incident.onlyClosedOnWeekDays}
