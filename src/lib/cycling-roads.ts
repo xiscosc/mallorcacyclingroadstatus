@@ -246,17 +246,31 @@ export const CYCLING_ROAD_REGIONS: readonly CyclingRoadRegion[] = [
 export const CYCLING_ROADS: readonly string[] = CYCLING_ROAD_REGIONS.flatMap((r) => r.roads);
 
 /**
- * Roads where a "closure" bans private motor traffic but coaches (buses) keep
- * running and cyclists are still allowed through. An intersection with one of
- * these closures should be surfaced as informational (heads-up about coach
- * traffic), not as a route blocker.
+ * Closures matching one of these patterns ban only private motor traffic;
+ * coaches (buses) keep running and cyclists are still allowed through. An
+ * intersection with one of these closures should be surfaced as informational
+ * (heads-up about coach traffic), not as a route blocker.
  *
- *   Ma-2210 — Port de Pollença → Cap de Formentor: closed to private cars in
- *     high season under the Consell de Mallorca's Formentor traffic plan;
- *     coaches and cyclists keep using the road.
+ *   Ma-2210 + "Restriccions de la DGT" — Port de Pollença → Cap de Formentor
+ *     seasonal Formentor restriction. The DGT keeps the road open for coaches
+ *     and cyclists; private cars are banned during the daily window.
+ *
+ * Match on the source observation text so unrelated future closures on the
+ * same road (e.g. roadworks) still surface as real blockers.
  */
-export const BUS_ONLY_CLOSURE_ROADS: readonly string[] = ['Ma-2210'];
+const BUS_ONLY_CLOSURE_PATTERNS: readonly { road: string; observation: RegExp }[] = [
+	{ road: 'Ma-2210', observation: /Restriccions de la DGT/i }
+];
 
-export function isBusOnlyClosure(incident: { roadName: string; isClosed: boolean }): boolean {
-	return incident.isClosed && BUS_ONLY_CLOSURE_ROADS.includes(incident.roadName);
+export function isBusOnlyClosure(incident: {
+	roadName: string;
+	isClosed: boolean;
+	meta: Record<string, unknown>;
+}): boolean {
+	if (!incident.isClosed) return false;
+	const observations =
+		typeof incident.meta.observacions === 'string' ? incident.meta.observacions : '';
+	return BUS_ONLY_CLOSURE_PATTERNS.some(
+		(p) => p.road === incident.roadName && p.observation.test(observations)
+	);
 }
