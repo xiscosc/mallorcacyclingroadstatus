@@ -23,6 +23,8 @@
 	"banner_route_clear": "Tu ruta está libre",
 	"banner_route_incidents_one": "{count} incidencia en tu ruta",
 	"banner_route_incidents_other": "{count} incidencias en tu ruta",
+	"banner_bus_only_note_one": "Atención: {roads} está cerrada al tráfico de vehículos privados, pero los autocares siguen circulando y los ciclistas pueden pasar.",
+	"banner_bus_only_note_other": "Atención: {roads} están cerradas al tráfico de vehículos privados, pero los autocares siguen circulando y los ciclistas pueden pasar.",
 	"banner_route_unnamed": "Tu ruta",
 	"badge_closed": "Cortada",
 	"badge_weekdays_only": "Solo entre semana",

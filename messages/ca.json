@@ -23,6 +23,8 @@
 	"banner_route_clear": "La teva ruta està lliure",
 	"banner_route_incidents_one": "{count} incidència a la teva ruta",
 	"banner_route_incidents_other": "{count} incidències a la teva ruta",
+	"banner_bus_only_note_one": "Atenció: {roads} està tancada al trànsit de vehicles privats, però els autocars hi continuen circulant i els ciclistes hi poden passar.",
+	"banner_bus_only_note_other": "Atenció: {roads} estan tancades al trànsit de vehicles privats, però els autocars hi continuen circulant i els ciclistes hi poden passar.",
 	"banner_route_unnamed": "La teva ruta",
 	"badge_closed": "Tallada",
 	"badge_weekdays_only": "Només entre setmana",

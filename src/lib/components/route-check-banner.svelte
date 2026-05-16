@@ -6,6 +6,7 @@
 	import { DateTime } from 'luxon';
 	import CircleCheck from '@lucide/svelte/icons/circle-check';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+	import Bus from '@lucide/svelte/icons/bus';
 	import Clock from '@lucide/svelte/icons/clock';
 	import X from '@lucide/svelte/icons/x';
 
@@ -15,6 +16,9 @@
 		d ? DateTime.fromJSDate(d).setZone('Europe/Madrid').toFormat('dd LLL HH:mm') : '—';
 	const fmtRange = (a: Date | undefined, b: Date | undefined) =>
 		!a && !b ? null : `${fmt(a)} → ${fmt(b)}`;
+
+	const uniqueRoadNames = (incidents: { roadName: string }[]) =>
+		[...new Set(incidents.map((i) => i.roadName))].join(', ');
 </script>
 
 {#if checker.error}
@@ -33,6 +37,7 @@
 	</Alert.Root>
 {:else if checker.track && checker.affected}
 	{@const ok = checker.affected.length === 0}
+	{@const busOnly = checker.busOnly ?? []}
 	<Alert.Root
 		class={[
 			'relative pr-10',
@@ -84,6 +89,21 @@
 					</li>
 				{/each}
 			</ul>
+		{/if}
+
+		{#if busOnly.length > 0}
+			<div
+				class="col-start-2 mt-3 flex items-start gap-2 rounded-md border bg-background/70 px-3 py-2 text-foreground"
+			>
+				<Bus class="mt-0.5 size-4 shrink-0" />
+				<p class="text-sm">
+					{#if busOnly.length === 1}
+						{m.banner_bus_only_note_one({ roads: uniqueRoadNames(busOnly) })}
+					{:else}
+						{m.banner_bus_only_note_other({ roads: uniqueRoadNames(busOnly) })}
+					{/if}
+				</p>
+			</div>
 		{/if}
 
 		<button
