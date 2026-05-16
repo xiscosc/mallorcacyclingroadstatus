@@ -244,3 +244,19 @@ export const CYCLING_ROAD_REGIONS: readonly CyclingRoadRegion[] = [
 ];
 
 export const CYCLING_ROADS: readonly string[] = CYCLING_ROAD_REGIONS.flatMap((r) => r.roads);
+
+/**
+ * Roads where a "closure" bans private motor traffic but coaches (buses) keep
+ * running and cyclists are still allowed through. An intersection with one of
+ * these closures should be surfaced as informational (heads-up about coach
+ * traffic), not as a route blocker.
+ *
+ *   Ma-2210 — Port de Pollença → Cap de Formentor: closed to private cars in
+ *     high season under the Consell de Mallorca's Formentor traffic plan;
+ *     coaches and cyclists keep using the road.
+ */
+export const BUS_ONLY_CLOSURE_ROADS: readonly string[] = ['Ma-2210'];
+
+export function isBusOnlyClosure(incident: { roadName: string; isClosed: boolean }): boolean {
+	return incident.isClosed && BUS_ONLY_CLOSURE_ROADS.includes(incident.roadName);
+}

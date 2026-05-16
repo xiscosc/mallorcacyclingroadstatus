@@ -1,6 +1,7 @@
 import { deserialize } from '$app/forms';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
 import { fetchStravaRouteGpx, parseStravaUrl } from './strava';
+import { isBusOnlyClosure } from './cycling-roads';
 import type { Incident } from '$lib/incidents';
 import { m } from '$lib/paraglide/messages';
 
@@ -12,23 +13,28 @@ import { m } from '$lib/paraglide/messages';
 export function createRouteChecker(getIncidents: () => Incident[]) {
 	let track = $state<ParsedGpx | null>(null);
 	let affected = $state<Incident[] | null>(null);
+	let busOnly = $state<Incident[] | null>(null);
 	let error = $state<string | null>(null);
 	let isProcessing = $state(false);
 
-	const affectedIds = $derived(new Set(affected?.map((i) => i.id) ?? []));
+	const affectedIds = $derived(
+		new Set([...(affected?.map((i) => i.id) ?? []), ...(busOnly?.map((i) => i.id) ?? [])])
+	);
 
 	async function checkTrack(parsed: ParsedGpx): Promise<void> {
 		// Yield once so the loader paints before we start the distance math.
 		await new Promise((r) => setTimeout(r, 0));
 		const hits = await findAffectedIncidents(parsed, getIncidents());
 		track = parsed;
-		affected = hits;
+		busOnly = hits.filter(isBusOnlyClosure);
+		affected = hits.filter((h) => !isBusOnlyClosure(h));
 	}
 
 	async function loadGpx(file: File): Promise<void> {
 		error = null;
 		track = null;
 		affected = null;
+		busOnly = null;
 		isProcessing = true;
 		try {
 			const text = await file.text();
@@ -44,6 +50,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		error = null;
 		track = null;
 		affected = null;
+		busOnly = null;
 		isProcessing = true;
 		try {
 			const form = new FormData();
@@ -73,6 +80,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		error = null;
 		track = null;
 		affected = null;
+		busOnly = null;
 		isProcessing = true;
 		try {
 			const gpx = await fetchStravaRouteGpx(routeId, accessToken.trim());
@@ -90,6 +98,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 			error = m.error_invalid_strava_url();
 			track = null;
 			affected = null;
+			busOnly = null;
 			return;
 		}
 		await loadStravaRouteId(parsed.routeId, accessToken);
@@ -98,6 +107,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 	function clear(): void {
 		track = null;
 		affected = null;
+		busOnly = null;
 		error = null;
 	}
 
@@ -107,6 +117,9 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		},
 		get affected() {
 			return affected;
+		},
+		get busOnly() {
+			return busOnly;
 		},
 		get error() {
 			return error;

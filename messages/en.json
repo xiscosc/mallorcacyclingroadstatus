@@ -23,6 +23,8 @@
 	"banner_route_clear": "Your route is clear",
 	"banner_route_incidents_one": "{count} incident on your route",
 	"banner_route_incidents_other": "{count} incidents on your route",
+	"banner_bus_only_note_one": "Heads up — {roads} is closed to private cars, but coaches still run the road and cyclists are allowed through.",
+	"banner_bus_only_note_other": "Heads up — {roads} are closed to private cars, but coaches still run those roads and cyclists are allowed through.",
 	"banner_route_unnamed": "Your route",
 	"badge_closed": "Closed",
 	"badge_weekdays_only": "Weekdays only",

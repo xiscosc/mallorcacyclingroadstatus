@@ -23,6 +23,8 @@
 	"banner_route_clear": "Deine Route ist frei",
 	"banner_route_incidents_one": "{count} Vorfall auf deiner Route",
 	"banner_route_incidents_other": "{count} Vorfälle auf deiner Route",
+	"banner_bus_only_note_one": "Hinweis: {roads} ist für private Fahrzeuge gesperrt, aber Reisebusse fahren weiterhin und Radfahrer dürfen passieren.",
+	"banner_bus_only_note_other": "Hinweis: {roads} sind für private Fahrzeuge gesperrt, aber Reisebusse fahren weiterhin und Radfahrer dürfen passieren.",
 	"banner_route_unnamed": "Deine Route",
 	"badge_closed": "Gesperrt",
 	"badge_weekdays_only": "Nur werktags",
