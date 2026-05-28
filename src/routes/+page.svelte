@@ -124,7 +124,9 @@
 
 	<RouteCheckBanner {checker} />
 
-	<Card class="relative flex-1 overflow-hidden p-0 shadow-lg ring-1 ring-border/70">
+	<Card
+		class="relative min-h-[60dvh] flex-1 overflow-hidden p-0 shadow-lg ring-1 ring-border/70 sm:min-h-[400px]"
+	>
 		<div
 			class="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-full border bg-card/85 px-3 py-1.5 text-xs shadow-md backdrop-blur-md"
 		>

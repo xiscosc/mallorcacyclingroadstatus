@@ -119,7 +119,7 @@
 	{@html jsonLdScript}
 </svelte:head>
 <div
-	class="flex h-dvh flex-col pb-[env(safe-area-inset-bottom)]"
+	class="flex min-h-dvh flex-col pb-[env(safe-area-inset-bottom)]"
 	style="padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);"
 >
 	{@render children()}
