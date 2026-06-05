@@ -70,18 +70,15 @@
 	<section
 		class="relative overflow-hidden rounded-2xl bg-card/80 p-6 shadow-sm ring-1 ring-border/70 backdrop-blur-sm sm:p-8"
 	>
-		<div
-			class="pointer-events-none absolute -top-24 -right-16 size-64 rounded-full bg-linear-to-br from-indigo-500/25 to-violet-500/25 blur-3xl"
-		></div>
-		<div
-			class="pointer-events-none absolute -bottom-24 -left-16 size-56 rounded-full bg-linear-to-tr from-violet-500/20 to-fuchsia-500/15 blur-3xl"
-		></div>
+		<div class="pointer-events-none absolute inset-x-0 top-0 flex h-1">
+			<span class="flex-1 bg-[#319151]"></span>
+			<span class="flex-1 bg-[#f3931a]"></span>
+			<span class="flex-1 bg-[#da272c]"></span>
+		</div>
 
 		<div class="relative flex items-start justify-between gap-3">
 			<div class="flex min-w-0 flex-col gap-3">
-				<h1
-					class="bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl"
-				>
+				<h1 class="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
 					{m.home_heading()}
 				</h1>
 				<p class="max-w-prose text-muted-foreground">
@@ -131,12 +128,12 @@
 			class="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-full border bg-card/85 px-3 py-1.5 text-xs shadow-md backdrop-blur-md"
 		>
 			<span class="flex items-center gap-1.5">
-				<span class="size-2 rounded-full bg-red-500"></span>
+				<span class="size-2 rounded-full bg-[#da272c]"></span>
 				{m.legend_road_closed()}
 			</span>
 			{#if hasBusOnly}
 				<span class="flex items-center gap-1.5">
-					<span class="size-2 rounded-full bg-emerald-500"></span>
+					<span class="size-2 rounded-full bg-[#319151]"></span>
 					{m.legend_road_bus_only()}
 				</span>
 			{/if}
@@ -154,7 +151,7 @@
 			{#each incidents as incident (incident.id)}
 				{@const isAffected = checker.affectedIds.has(incident.id)}
 				{@const busOnly = isBusOnlyClosure(incident)}
-				{@const color = busOnly ? '#10b981' : incident.isClosed ? '#ef4444' : '#f59e0b'}
+				{@const color = busOnly ? '#319151' : incident.isClosed ? '#da272c' : '#f3931a'}
 				{#each incident.coordinates as line, i (i)}
 					<MapRoute
 						coordinates={line}
@@ -183,12 +180,12 @@
 									<span class="font-semibold">{incident.roadName}</span>
 									<span class="opacity-70">· {incident.type}</span>
 									{#if busOnly}
-										<span class="text-emerald-500">· {m.tooltip_bus_only()}</span>
+										<span class="text-[#319151]">· {m.tooltip_bus_only()}</span>
 									{:else if incident.isClosed}
-										<span class="text-red-500">· {m.tooltip_closed()}</span>
+										<span class="text-[#da272c]">· {m.tooltip_closed()}</span>
 									{/if}
 									{#if incident.onlyClosedOnWeekDays}
-										<span class="text-amber-500">· {m.tooltip_weekdays_only()}</span>
+										<span class="text-[#f3931a]">· {m.tooltip_weekdays_only()}</span>
 									{/if}
 								</div>
 								<div class="text-[10px] opacity-60">

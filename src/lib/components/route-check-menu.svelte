@@ -170,7 +170,7 @@
 				{...props}
 				size="lg"
 				disabled={checker.isProcessing}
-				class="bg-linear-to-r from-indigo-500 to-violet-500 font-semibold text-white shadow-md shadow-indigo-500/30 hover:from-indigo-500/90 hover:to-violet-500/90"
+				class="bg-[#293947] font-semibold text-white shadow-sm hover:bg-[#34506b]"
 			>
 				{#if checker.isProcessing}
 					<div class="animate-spin">

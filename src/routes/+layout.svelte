@@ -94,11 +94,18 @@
 	{/each}
 	<link rel="alternate" hreflang="x-default" href={xDefaultHref} />
 	<meta name="robots" content="index, follow, max-image-preview:large" />
-	<meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)" />
-	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+	<meta name="theme-color" content="#0d171f" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f8f5e4" media="(prefers-color-scheme: light)" />
 	<meta name="apple-mobile-web-app-title" content="Mallorca Cycling" />
-	<link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32" />
-	<link rel="apple-touch-icon" href="/logo.png" />
+	<link rel="icon" type="image/x-icon" href="/favicons/favicon.ico" sizes="any" />
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png" />
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
+	<link rel="icon" type="image/png" sizes="96x96" href="/favicons/favicon-96x96.png" />
+	<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-180x180-touch-icon.png" />
+	<link rel="apple-touch-icon" sizes="152x152" href="/favicons/apple-152x152-touch-icon.png" />
+	<link rel="apple-touch-icon" sizes="120x120" href="/favicons/apple-120x120-touch-icon.png" />
+	<link rel="apple-touch-icon" sizes="76x76" href="/favicons/apple-76x76-touch-icon.png" />
+	<link rel="manifest" href="/favicons/site.webmanifest" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content={SITE_NAME} />

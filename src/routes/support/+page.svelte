@@ -53,18 +53,15 @@
 	<section
 		class="relative overflow-hidden rounded-2xl bg-card/80 p-6 shadow-sm ring-1 ring-border/70 backdrop-blur-sm sm:p-8"
 	>
-		<div
-			class="pointer-events-none absolute -top-24 -right-16 size-64 rounded-full bg-linear-to-br from-indigo-500/25 to-violet-500/25 blur-3xl"
-		></div>
-		<div
-			class="pointer-events-none absolute -bottom-24 -left-16 size-56 rounded-full bg-linear-to-tr from-violet-500/20 to-fuchsia-500/15 blur-3xl"
-		></div>
+		<div class="pointer-events-none absolute inset-x-0 top-0 flex h-1">
+			<span class="flex-1 bg-[#319151]"></span>
+			<span class="flex-1 bg-[#f3931a]"></span>
+			<span class="flex-1 bg-[#da272c]"></span>
+		</div>
 
 		<div class="relative flex items-start justify-between gap-3">
 			<div class="flex min-w-0 flex-col gap-3">
-				<h1
-					class="bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl"
-				>
+				<h1 class="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
 					{m.support_heading()}
 				</h1>
 				<p class="max-w-prose text-muted-foreground">

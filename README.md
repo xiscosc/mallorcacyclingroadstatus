@@ -31,12 +31,12 @@ bun run dev
 
 ### Local secrets (`.dev.vars`)
 
-| Var                   | What it is                                                                                          |
-| --------------------- | --------------------------------------------------------------------------------------------------- |
-| `CONSELL_POINTS_URL`  | JSONP endpoint with incident metadata (Consell de Mallorca)                                         |
-| `CONSELL_LINES_URL`   | JSONP endpoint with incident geometry (UTM Zone 31N)                                                |
-| `TURNSTILE_SITE_KEY`  | Cloudflare Turnstile site key — use the always-passing test key locally                             |
-| `TURNSTILE_SECRET`    | Cloudflare Turnstile secret — use the always-passing test secret locally                            |
+| Var                  | What it is                                                               |
+| -------------------- | ------------------------------------------------------------------------ |
+| `CONSELL_POINTS_URL` | JSONP endpoint with incident metadata (Consell de Mallorca)              |
+| `CONSELL_LINES_URL`  | JSONP endpoint with incident geometry (UTM Zone 31N)                     |
+| `TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key — use the always-passing test key locally  |
+| `TURNSTILE_SECRET`   | Cloudflare Turnstile secret — use the always-passing test secret locally |
 
 Always-passing Turnstile test keys are documented [here](https://developers.cloudflare.com/turnstile/troubleshooting/testing/).
 

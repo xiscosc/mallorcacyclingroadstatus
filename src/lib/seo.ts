@@ -3,6 +3,6 @@ export const SITE_ORIGIN = 'https://mallorcacyclingroads.cc';
 
 export const OG_IMAGE = {
 	url: `${SITE_ORIGIN}/og-image.jpg`,
-	width: '1200',
-	height: '1031'
+	width: '2848',
+	height: '1504'
 } as const;
