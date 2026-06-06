@@ -28,6 +28,8 @@ Local secrets: copy `.dev.vars.example` → `.dev.vars` (gitignored) and fill in
 
 `src/worker.ts` is a thin wrapper that re-exports the `fetch` handler from `adapter-cloudflare`'s generated worker (`.svelte-kit/cloudflare/_worker.js`) and adds a `scheduled` handler that calls `runCron`. `wrangler.toml` points `main` here, so SvelteKit and the cron cohabit one worker. The build artifact only exists after `vite build`, hence the `@ts-ignore` on its import.
 
+**`wrangler.build.jsonc` — do not delete.** As of `@sveltejs/adapter-cloudflare` v7, the adapter writes its generated (fetch-only) worker to whatever `main` points at in the wrangler config it reads, **deleting the file there first**. If it read `wrangler.toml` (`main = src/worker.ts`) it would clobber our wrapper on every build, dropping `scheduled()` from the deploy — the cron then fails at runtime with `Handler does not export a scheduled() function`. So `svelte.config.js` passes the adapter a separate build-only config (`config: './wrangler.build.jsonc'`) whose `main` points at the adapter's own output path (`.svelte-kit/cloudflare/_worker.js`). `wrangler deploy` still reads `wrangler.toml` and bundles `src/worker.ts`. The build config duplicates only `name`, `compatibility_date`/`flags`, and `assets.directory`/`binding` — keep those in sync with `wrangler.toml`; **all bindings/vars/crons/routes live solely in `wrangler.toml`.**
+
 `wrangler.toml` defines:
 
 - R2 binding `INCIDENTS` (bucket `mallorca-cycling-incidents`)
