@@ -1,0 +1,27 @@
+{
+	// Build-only config consumed by @sveltejs/adapter-cloudflare (svelte.config.js).
+	//
+	// Why this file exists: adapter-cloudflare v7 writes its generated (fetch-only)
+	// worker to whatever `main` points at in the wrangler config it reads, deleting
+	// the previous file first. Our real entry (wrangler.toml `main = src/worker.ts`)
+	// is a hand-written wrapper that re-exports the adapter's `fetch` AND adds the
+	// `scheduled` cron handler. If the adapter read wrangler.toml it would clobber
+	// that wrapper, dropping `scheduled()` from the deploy (the cron then fails with
+	// "Handler does not export a scheduled() function").
+	//
+	// So the adapter reads THIS config instead, with `main` pointed at its own
+	// output path. It emits `.svelte-kit/cloudflare/_worker.js`, which src/worker.ts
+	// imports. `wrangler deploy` keeps using wrangler.toml.
+	//
+	// Bindings, vars, crons, routes etc. live ONLY in wrangler.toml — keep them there.
+	// `name`, `compatibility_date`, and the `assets.directory` below must stay in
+	// sync with wrangler.toml.
+	"name": "mallorcacyclingroadstatus",
+	"compatibility_date": "2025-05-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"directory": ".svelte-kit/cloudflare",
+		"binding": "ASSETS"
+	}
+}
