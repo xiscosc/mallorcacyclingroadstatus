@@ -15,6 +15,7 @@
 	import { createRouteChecker } from '$lib/route-check.svelte';
 	import RouteCheckMenu from '$lib/components/route-check-menu.svelte';
 	import RouteCheckBanner from '$lib/components/route-check-banner.svelte';
+	import EclipseBanner from '$lib/components/eclipse-banner.svelte';
 	import LanguageSwitcher from '$lib/components/language-switcher.svelte';
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
@@ -118,6 +119,8 @@
 			/>
 		</div>
 	</section>
+
+	<EclipseBanner />
 
 	<RouteCheckBanner {checker} />
 
