@@ -11,6 +11,7 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import { cn } from '$lib/utils.js';
 	import Icon from '@iconify/svelte';
 	import Upload from '@lucide/svelte/icons/upload';
 	import Route from '@lucide/svelte/icons/route';
@@ -24,12 +25,14 @@
 		checker,
 		turnstileSiteKey,
 		stravaToken,
-		stravaAthleteId
+		stravaAthleteId,
+		buttonClass
 	}: {
 		checker: RouteChecker;
 		turnstileSiteKey: string;
 		stravaToken: string | null;
 		stravaAthleteId: string | null;
+		buttonClass?: string;
 	} = $props();
 
 	let fileInput: HTMLInputElement;
@@ -170,7 +173,10 @@
 				{...props}
 				size="lg"
 				disabled={checker.isProcessing}
-				class="bg-[#293947] font-semibold text-white shadow-sm hover:bg-[#34506b]"
+				class={cn(
+					'bg-[#293947] font-semibold text-white shadow-sm hover:bg-[#34506b]',
+					buttonClass
+				)}
 			>
 				{#if checker.isProcessing}
 					<div class="animate-spin">

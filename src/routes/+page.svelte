@@ -16,6 +16,7 @@
 	import RouteCheckMenu from '$lib/components/route-check-menu.svelte';
 	import RouteCheckBanner from '$lib/components/route-check-banner.svelte';
 	import EclipseBanner from '$lib/components/eclipse-banner.svelte';
+	import BikeRentalBanner from '$lib/components/bike-rental-banner.svelte';
 	import LanguageSwitcher from '$lib/components/language-switcher.svelte';
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
@@ -23,6 +24,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
+	import Bike from '@lucide/svelte/icons/bike';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Mail from '@lucide/svelte/icons/mail';
 	import Icon from '@iconify/svelte';
@@ -69,34 +71,30 @@
 
 <main class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6">
 	<section
-		class="relative overflow-hidden rounded-2xl bg-card/80 p-6 shadow-sm ring-1 ring-border/70 backdrop-blur-sm sm:p-8"
+		class="rounded-xl bg-card/80 p-3 shadow-sm ring-1 ring-border/70 backdrop-blur-sm sm:p-5"
 	>
-		<div class="pointer-events-none absolute inset-x-0 top-0 flex h-1">
-			<span class="flex-1 bg-[#319151]"></span>
-			<span class="flex-1 bg-[#f3931a]"></span>
-			<span class="flex-1 bg-[#da272c]"></span>
-		</div>
-
-		<div class="relative flex items-start justify-between gap-3">
-			<div class="flex min-w-0 flex-col gap-3">
-				<h1 class="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+		<div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3">
+			<span
+				class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#319151]/12 text-[#319151] ring-1 ring-[#319151]/20 sm:size-10"
+				aria-hidden="true"
+			>
+				<Bike class="size-4.5 sm:size-5" />
+			</span>
+			<h1 class="min-w-0 leading-tight tracking-tight">
+				<span class="block text-base font-bold text-foreground sm:inline sm:text-xl">
 					{m.home_heading()}
-				</h1>
-				<p class="max-w-prose text-muted-foreground">
-					{#if incidents.length === 0}
-						{m.home_no_closures()}
-					{:else}
-						<span class="font-medium text-foreground">{incidents.length}</span>
-						{incidents.length === 1 ? m.home_closures_one() : m.home_closures_other()}
-					{/if}
-					{m.home_intro()}
-				</p>
-			</div>
-			<div class="flex shrink-0 items-center gap-1">
-				<LanguageSwitcher />
+				</span>
+				<span
+					class="block text-xs font-medium text-muted-foreground sm:ml-1 sm:inline sm:text-xl sm:font-bold sm:text-foreground"
+				>
+					{m.home_heading_status()}
+				</span>
+			</h1>
+			<div class="flex shrink-0 items-center">
+				<LanguageSwitcher size="icon" />
 				<Button
 					variant="ghost"
-					size="icon-lg"
+					size="icon"
 					onclick={toggleTheme}
 					aria-label={m.toggle_theme()}
 					class="shrink-0"
@@ -110,12 +108,39 @@
 			</div>
 		</div>
 
-		<div class="relative mt-6">
+		<div
+			class="mt-3 flex flex-col gap-3 border-t pt-3 sm:mt-4 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<div class="flex min-w-0 flex-1 items-center gap-2.5">
+				<span
+					class={[
+						'size-2.5 shrink-0 rounded-full ring-4',
+						incidents.length === 0
+							? 'bg-[#319151] ring-[#319151]/15'
+							: 'bg-[#da272c] ring-[#da272c]/15'
+					]}
+					aria-hidden="true"
+				></span>
+				<div class="min-w-0">
+					<p class="text-sm font-semibold text-foreground">
+						{#if incidents.length === 0}
+							{m.home_no_closures()}
+						{:else}
+							<span>{incidents.length}</span>
+							{' '}
+							{incidents.length === 1 ? m.home_closures_one() : m.home_closures_other()}
+						{/if}
+					</p>
+					<p class="hidden text-xs text-muted-foreground sm:block">{m.home_check_hint()}</p>
+				</div>
+			</div>
+
 			<RouteCheckMenu
 				{checker}
 				turnstileSiteKey={data.turnstileSiteKey}
 				stravaToken={data.stravaToken}
 				stravaAthleteId={data.stravaAthleteId}
+				buttonClass="w-full justify-center sm:w-auto"
 			/>
 		</div>
 	</section>
@@ -205,6 +230,8 @@
 			<MapControls showFullscreen />
 		</Map>
 	</Card>
+
+	<BikeRentalBanner />
 
 	<footer class="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
 		<div class="flex flex-wrap items-center gap-1.5">

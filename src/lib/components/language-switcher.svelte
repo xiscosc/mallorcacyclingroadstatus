@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
+	import { Button, type ButtonSize } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { getLocale, locales, setLocale, type Locale } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages';
@@ -13,19 +13,15 @@
 		ca: 'Català'
 	};
 
+	let { size = 'icon-lg' }: { size?: ButtonSize } = $props();
+
 	const current = $derived(getLocale());
 </script>
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
-			<Button
-				{...props}
-				variant="ghost"
-				size="icon-lg"
-				aria-label={m.change_language()}
-				class="shrink-0"
-			>
+			<Button {...props} variant="ghost" {size} aria-label={m.change_language()} class="shrink-0">
 				<Languages class="size-4" />
 			</Button>
 		{/snippet}
