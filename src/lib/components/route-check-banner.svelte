@@ -3,10 +3,13 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { m } from '$lib/paraglide/messages';
+	import { ECLIPSE_INFO_URL } from '$lib/eclipse';
 	import { DateTime } from 'luxon';
 	import CircleCheck from '@lucide/svelte/icons/circle-check';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import Bus from '@lucide/svelte/icons/bus';
+	import Eclipse from '@lucide/svelte/icons/eclipse';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Clock from '@lucide/svelte/icons/clock';
 	import X from '@lucide/svelte/icons/x';
 
@@ -38,6 +41,7 @@
 {:else if checker.track && checker.affected}
 	{@const ok = checker.affected.length === 0}
 	{@const busOnly = checker.busOnly ?? []}
+	{@const eclipse = checker.eclipse ?? []}
 	<Alert.Root
 		class={[
 			'relative pr-10',
@@ -75,6 +79,8 @@
 							<Badge variant="outline">{inc.type}</Badge>
 							{#if inc.isClosed}
 								<Badge variant="destructive">{m.badge_closed()}</Badge>
+							{:else if inc.hasTrafficCuts}
+								<Badge variant="secondary">{m.badge_traffic_cuts()}</Badge>
 							{/if}
 							{#if inc.onlyClosedOnWeekDays}
 								<Badge variant="secondary">{m.badge_weekdays_only()}</Badge>
@@ -102,6 +108,30 @@
 					{:else}
 						{m.banner_bus_only_note_other({ roads: uniqueRoadNames(busOnly) })}
 					{/if}
+				</p>
+			</div>
+		{/if}
+
+		{#if eclipse.length > 0}
+			<div
+				class="col-start-2 mt-3 flex items-start gap-2 rounded-md border bg-background/70 px-3 py-2 text-foreground"
+			>
+				<Eclipse class="mt-0.5 size-4 shrink-0 text-[#8059a6]" />
+				<p class="text-sm">
+					{#if eclipse.length === 1}
+						{m.banner_eclipse_note_one({ roads: uniqueRoadNames(eclipse) })}
+					{:else}
+						{m.banner_eclipse_note_other({ roads: uniqueRoadNames(eclipse) })}
+					{/if}
+					<a
+						href={ECLIPSE_INFO_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center gap-1 font-semibold text-[#8059a6] underline underline-offset-2"
+					>
+						{m.eclipse_banner_link()}
+						<ExternalLink class="size-3" />
+					</a>
 				</p>
 			</div>
 		{/if}

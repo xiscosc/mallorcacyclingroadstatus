@@ -1,6 +1,7 @@
 import { gpx as gpxToGeoJson } from '@tmcw/togeojson';
 import pointToLineDistance from '@turf/point-to-line-distance';
 import { lineString } from '@turf/helpers';
+import type { Feature, LineString } from 'geojson';
 import type { Incident } from '$lib/incidents';
 
 export type ParsedGpx = {
@@ -56,21 +57,32 @@ function bboxOverlaps(a: Bbox, b: Bbox, padDeg: number): boolean {
 
 function isIncidentAffected(
 	track: ParsedGpx,
+	trackLine: Feature<LineString>,
 	incident: Incident,
 	trackBbox: Bbox,
 	padDeg: number,
 	toleranceMeters: number
 ): boolean {
-	const allPoints = incident.coordinates.flat();
-	if (allPoints.length < 2) return false;
+	const lines = incident.coordinates.filter((line) => line.length >= 2);
+	const allPoints = lines.flat();
+	if (incident.location) allPoints.push(incident.location);
+	if (allPoints.length === 0) return false;
 	if (!bboxOverlaps(trackBbox, bboxOf(allPoints), padDeg)) return false;
-	for (const line of incident.coordinates) {
-		if (line.length < 2) continue;
+	for (const line of lines) {
 		const ls = lineString(line);
 		for (const pt of track.coordinates) {
 			const d = pointToLineDistance(pt, ls, { units: 'meters' });
 			if (d <= toleranceMeters) return true;
 		}
+	}
+	// PK markers come with an anchor point and no stretch — a route running past the
+	// marker still has to be flagged. Measure the marker against the track *line*, not
+	// against its vertices: consecutive GPX points sit tens of meters apart, so a route
+	// can pass straight over the marker without sampling a vertex near it.
+	if (lines.length === 0 && incident.location) {
+		return (
+			pointToLineDistance(incident.location, trackLine, { units: 'meters' }) <= toleranceMeters
+		);
 	}
 	return false;
 }
@@ -88,12 +100,13 @@ export async function findAffectedIncidents(
 ): Promise<Incident[]> {
 	if (track.coordinates.length < 2) return [];
 	const trackBbox = bboxOf(track.coordinates);
+	const trackLine = lineString(track.coordinates);
 	// Rough degrees-per-meter at mid-latitudes: 1° latitude ≈ 111 km.
 	const padDeg = toleranceMeters / 111000 + 0.0005;
 
 	const affected: Incident[] = [];
 	for (let i = 0; i < incidents.length; i++) {
-		if (isIncidentAffected(track, incidents[i], trackBbox, padDeg, toleranceMeters)) {
+		if (isIncidentAffected(track, trackLine, incidents[i], trackBbox, padDeg, toleranceMeters)) {
 			affected.push(incidents[i]);
 		}
 		if ((i + 1) % chunkSize === 0) {

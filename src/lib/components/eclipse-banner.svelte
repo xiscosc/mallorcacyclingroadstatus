@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { ECLIPSE_INFO_URL } from '$lib/eclipse';
 	import Bike from '@lucide/svelte/icons/bike';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { DateTime } from 'luxon';
 
-	const SOURCE_URL =
-		'https://www.caib.es/webgoib/es/-/mesures-de-control-restricci%C3%B3-i-tancament-3';
 	const expiresAt = DateTime.fromISO('2026-08-13T00:00:00', {
 		zone: 'Europe/Madrid'
 	}).toMillis();
@@ -14,7 +13,7 @@
 
 {#if isVisible}
 	<a
-		href={SOURCE_URL}
+		href={ECLIPSE_INFO_URL}
 		target="_blank"
 		rel="noopener noreferrer"
 		class="group relative isolate block overflow-hidden rounded-xl bg-[#171524] px-4 py-3 text-white shadow-md ring-1 ring-white/10 transition-[box-shadow] hover:ring-[#f6c85f]/40 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f6c85f] sm:px-6 sm:py-4"
