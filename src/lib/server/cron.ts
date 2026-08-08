@@ -1,5 +1,5 @@
 import type { R2Bucket } from '@cloudflare/workers-types';
-import { ConsellDeMallorcaRoadsProvider } from '$lib/server/incidents/consell-mallorca';
+import { ConsellDeMallorcaArcGisProvider } from '$lib/server/incidents/consell-mallorca-arcgis';
 import { IncidentsProvider } from '$lib/server/incidents/provider';
 import type { Incident } from '$lib/incidents';
 import { CYCLING_ROADS } from '$lib/cycling-roads';
@@ -28,7 +28,7 @@ export type CronResult = {
 };
 
 function buildProviders(env: CronEnv): IncidentsProvider[] {
-	return [new ConsellDeMallorcaRoadsProvider(env.CONSELL_POINTS_URL, env.CONSELL_LINES_URL)];
+	return [new ConsellDeMallorcaArcGisProvider(env.CONSELL_POINTS_URL, env.CONSELL_LINES_URL)];
 }
 
 /** Pulls from every provider, merges, and writes the result to R2. Partial-failure tolerant. */

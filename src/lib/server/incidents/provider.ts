@@ -19,6 +19,13 @@ export abstract class IncidentsProvider {
 
 	abstract load(ctx: ProviderContext, options?: LoadOptions): Promise<Incident[]>;
 
+	/** Parse a feed that may or may not carry a JSONP callback wrapper. */
+	protected parseJsonOrJsonp<T>(text: string): T {
+		const trimmed = text.trim();
+		if (trimmed.startsWith('{') || trimmed.startsWith('[')) return JSON.parse(trimmed) as T;
+		return this.parseJsonp<T>(trimmed);
+	}
+
 	/** Strip a JSONP callback wrapper (`cb({...})`) and return the parsed inner JSON. */
 	protected parseJsonp<T>(text: string): T {
 		const open = text.indexOf('(');

@@ -45,7 +45,7 @@ Local secrets: copy `.dev.vars.example` → `.dev.vars` (gitignored) and fill in
 
 ### Provider abstraction
 
-`src/lib/server/incidents/provider.ts` exposes an abstract `IncidentsProvider` with shared helpers: `parseJsonp` (for `cb({...})` JSONP wrappers) and `utm31nToLngLat` (UTM Zone 31N → WGS84 via `proj4`). Adding a new source = subclass it and append the instance in `cron.ts:buildProviders`. The current implementation `ConsellDeMallorcaRoadsProvider` joins a points feed (metadata, keyed by `codi`) with a lines feed (geometry) and parses `DD/MM/YYYY HH:MM` dates as `Europe/Madrid` via Luxon.
+`src/lib/server/incidents/provider.ts` exposes an abstract `IncidentsProvider` with shared helpers: `parseJsonOrJsonp` / `parseJsonp` (for `cb({...})` JSONP wrappers) and `utm31nToLngLat` (UTM Zone 31N → WGS84 via `proj4`). Adding a new source = subclass it and append the instance in `cron.ts:buildProviders`. The current implementation `ConsellDeMallorcaArcGisProvider` reads the Consell's ArcGIS REST layers (`f=json`): an `incidencies` point layer (metadata) joined to a `trams` polyline layer (geometry) by `idlocalit` — note `idinciden` is _not_ unique, one incident spans several road stretches. Both layers already ship WGS84 coordinates and epoch-millisecond dates; the provider still checks the declared `spatialReference` and reprojects UTM 31N if the endpoint ever serves it. A road is treated as closed when `gravetat`/`afeccio` is `TANCADA`, and point rows with no matching stretch (PK markers, no geometry) are skipped.
 
 The shared `Incident` type (`src/lib/incidents.ts`) is a `MultiLineString` in WGS84 `[lng, lat]` plus metadata; geometry must already be in WGS84 by the time it leaves the provider.
 
@@ -87,7 +87,7 @@ Standard SvelteKit: `$lib` → `src/lib`, `$app/*` from the runtime. `tsconfig.j
 ## Conventions
 
 - **Prettier**: tabs, single quotes, no trailing commas, 100-col print width, `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`. Always run `bun run format` before committing.
-- **Dates/times**: use Luxon (`DateTime` from `luxon`) for parsing, formatting, and zone conversion in user-facing code. Display times in `Europe/Madrid` (e.g. `DateTime.fromISO(iso).setZone('Europe/Madrid').toFormat('dd LLL HH:mm')`). The Consell provider already parses `DD/MM/YYYY HH:MM` source strings via Luxon.
+- **Dates/times**: use Luxon (`DateTime` from `luxon`) for parsing, formatting, and zone conversion in user-facing code. Display times in `Europe/Madrid` (e.g. `DateTime.fromISO(iso).setZone('Europe/Madrid').toFormat('dd LLL HH:mm')`). The Consell provider needs no date parsing — its feed carries epoch milliseconds.
 - **Platform bindings** are typed in `src/app.d.ts` under `App.Platform.env`; add new R2/var/secret bindings there _and_ in `wrangler.toml`.
 - New incident sources: implement `IncidentsProvider`, add to `buildProviders` in `cron.ts`, surface any new env vars in `app.d.ts`, `wrangler.toml`, `.dev.vars.example`, and the `CronEnv` type.
 - The `CYCLING_ROADS` whitelist in `src/lib/cycling-roads.ts` excludes motorways/autovías where bikes are banned (Ma-1, Ma-13, Ma-19, Ma-20, Ma-30) and is segment-aware for partially-banned roads (Ma-11, Ma-11A, Ma-15) — read the header comment before editing.

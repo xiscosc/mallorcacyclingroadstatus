@@ -1,4 +1,6 @@
 # Local overrides for wrangler dev. Copy to `.dev.vars` (gitignored) and fill in.
+# Consell de Mallorca ArcGIS REST layers (`f=json`): the `incidencies` point layer
+# (metadata) and the `trams` polyline layer (geometry), joined by `idlocalit`.
 CONSELL_POINTS_URL=
 CONSELL_LINES_URL=
 # Cloudflare Turnstile keys. Use the always-passing test pair locally:
