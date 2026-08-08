@@ -2,7 +2,7 @@ import { deserialize } from '$app/forms';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
 import { fetchStravaRouteGpx, parseStravaUrl } from './strava';
 import { isBusOnlyClosure } from './cycling-roads';
-import type { Incident } from '$lib/incidents';
+import { IncidentType, type Incident } from '$lib/incidents';
 import { m } from '$lib/paraglide/messages';
 
 /**
@@ -14,20 +14,30 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 	let track = $state<ParsedGpx | null>(null);
 	let affected = $state<Incident[] | null>(null);
 	let busOnly = $state<Incident[] | null>(null);
+	let eclipse = $state<Incident[] | null>(null);
 	let error = $state<string | null>(null);
 	let isProcessing = $state(false);
 
 	const affectedIds = $derived(
-		new Set([...(affected?.map((i) => i.id) ?? []), ...(busOnly?.map((i) => i.id) ?? [])])
+		new Set([
+			...(affected?.map((i) => i.id) ?? []),
+			...(busOnly?.map((i) => i.id) ?? []),
+			...(eclipse?.map((i) => i.id) ?? [])
+		])
 	);
+
+	const isEclipse = (i: Incident) => i.type === IncidentType.Eclipse;
 
 	async function checkTrack(parsed: ParsedGpx): Promise<void> {
 		// Yield once so the loader paints before we start the distance math.
 		await new Promise((r) => setTimeout(r, 0));
 		const hits = await findAffectedIncidents(parsed, getIncidents());
 		track = parsed;
+		// Bus-only and eclipse restrictions get their own note in the banner: they are
+		// not route blockers for a cyclist, so they stay out of `affected`.
 		busOnly = hits.filter(isBusOnlyClosure);
-		affected = hits.filter((h) => !isBusOnlyClosure(h));
+		eclipse = hits.filter(isEclipse);
+		affected = hits.filter((h) => !isBusOnlyClosure(h) && !isEclipse(h));
 	}
 
 	async function loadGpx(file: File): Promise<void> {
@@ -35,6 +45,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
+		eclipse = null;
 		isProcessing = true;
 		try {
 			const text = await file.text();
@@ -51,6 +62,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
+		eclipse = null;
 		isProcessing = true;
 		try {
 			const form = new FormData();
@@ -81,6 +93,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
+		eclipse = null;
 		isProcessing = true;
 		try {
 			const gpx = await fetchStravaRouteGpx(routeId, accessToken.trim());
@@ -99,6 +112,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 			track = null;
 			affected = null;
 			busOnly = null;
+			eclipse = null;
 			return;
 		}
 		await loadStravaRouteId(parsed.routeId, accessToken);
@@ -108,6 +122,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
+		eclipse = null;
 		error = null;
 	}
 
@@ -120,6 +135,9 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		},
 		get busOnly() {
 			return busOnly;
+		},
+		get eclipse() {
+			return eclipse;
 		},
 		get error() {
 			return error;

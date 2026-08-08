@@ -31,6 +31,8 @@ type SegmentAttributes = { idlocalit: number };
 
 type Polyline = { paths: number[][][] };
 
+type EsriPoint = { x: number; y: number };
+
 type EsriFeature<G, A> = { attributes: A; geometry?: G | null };
 
 type EsriLayer<G, A> = {
@@ -45,8 +47,16 @@ const UTM_31N_WKIDS = new Set([25831, 32631]);
 const TYPE_BY_CAUSA: Record<string, IncidentType> = {
 	'Prova esportiva': IncidentType.Sports,
 	Manteniment: IncidentType.Maintenance,
-	Obres: IncidentType.Maintenance
+	Obres: IncidentType.Maintenance,
+	Eclipsi: IncidentType.Eclipse
 };
+
+/**
+ * `afeccio` values that describe a cut to traffic rather than a full closure:
+ * "Tall de carril", "Tall mòbil", "Talls intermitens". Matched as a whole word so
+ * unrelated labels ("Trànsit altern", "Estrenyiment de calçada") stay out.
+ */
+const TRAFFIC_CUT = /\btalls?\b/i;
 
 /**
  * Incidents feed from the Consell de Mallorca road authority, ArcGIS REST flavour
@@ -55,8 +65,9 @@ const TYPE_BY_CAUSA: Record<string, IncidentType> = {
  * express dates as epoch milliseconds, so neither reprojection nor date parsing is
  * normally needed — the CRS is still checked in case the endpoint serves UTM 31N.
  *
- * Point rows without a matching stretch (a PK marker rather than a segment) carry no
- * geometry and are skipped.
+ * Iteration is driven by the point layer, so a row without a matching stretch (a PK
+ * marker rather than a segment) still comes through carrying its anchor point as the
+ * only geometry.
  */
 export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 	readonly name = 'consell-mallorca-arcgis';
@@ -71,24 +82,29 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 
 	async load({ fetch }: ProviderContext, options?: LoadOptions): Promise<Incident[]> {
 		const [points, lines] = await Promise.all([
-			this.fetchLayer<never, IncidentAttributes>(fetch, this.pointsUrl, 'incidents'),
+			this.fetchLayer<EsriPoint, IncidentAttributes>(fetch, this.pointsUrl, 'incidents'),
 			this.fetchLayer<Polyline, SegmentAttributes>(fetch, this.linesUrl, 'stretches')
 		]);
 
-		const toLngLat = this.coordinateMapper(lines);
+		const pointToLngLat = this.coordinateMapper(points);
+		const lineToLngLat = this.coordinateMapper(lines);
 
-		const byLocalitat = new Map<number, IncidentAttributes>();
-		for (const f of points.features ?? []) byLocalitat.set(f.attributes.idlocalit, f.attributes);
+		const pathsByLocalitat = new Map<number, number[][][]>();
+		for (const f of lines.features ?? []) {
+			const paths = f.geometry?.paths;
+			if (paths?.length) pathsByLocalitat.set(f.attributes.idlocalit, paths);
+		}
 
 		const roadFilter = options?.roads ? new Set(options.roads) : null;
 		const incidents: Incident[] = [];
-		for (const f of lines.features ?? []) {
-			const info = byLocalitat.get(f.attributes.idlocalit);
-			const paths = f.geometry?.paths;
-			if (!info?.carretera || !paths?.length) continue;
+		for (const f of points.features ?? []) {
+			const info = f.attributes;
+			if (!info.carretera) continue;
 			if (roadFilter && !roadFilter.has(info.carretera)) continue;
-			const isClosed = this.isRoadClosed(info);
-			if (options?.isClosed !== undefined && isClosed !== options.isClosed) continue;
+			const paths = pathsByLocalitat.get(info.idlocalit) ?? [];
+			const anchor = f.geometry;
+			// A row with neither a stretch nor an anchor cannot be placed on the map.
+			if (!paths.length && !anchor) continue;
 			const observacions = info.observacions ?? '';
 			incidents.push({
 				id: String(info.idlocalit),
@@ -96,10 +112,12 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 				roadName: info.carretera,
 				startDate: this.parseEpoch(info.inici),
 				endDate: this.parseEpoch(info.fin),
-				isClosed,
+				isClosed: this.isRoadClosed(info),
+				hasTrafficCuts: TRAFFIC_CUT.test(info.afeccio ?? ''),
 				onlyClosedOnWeekDays: /laborable/i.test(observacions),
 				type: TYPE_BY_CAUSA[info.causa ?? ''] ?? IncidentType.Other,
-				coordinates: paths.map((path) => path.map(toLngLat)),
+				coordinates: paths.map((path) => path.map(lineToLngLat)),
+				location: anchor ? pointToLngLat([anchor.x, anchor.y]) : undefined,
 				meta: {
 					idinciden: info.idinciden,
 					causa: info.causa,

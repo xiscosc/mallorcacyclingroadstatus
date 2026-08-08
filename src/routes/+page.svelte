@@ -51,13 +51,33 @@
 	const EMOJI: Record<IncidentType, string> = {
 		[IncidentType.Sports]: '🏅',
 		[IncidentType.Maintenance]: '🚧',
+		[IncidentType.Eclipse]: '🌒',
 		[IncidentType.Other]: '⚠️'
 	};
+
+	const CLOSED_COLOR = '#da272c';
+	const CUTS_COLOR = '#f3931a';
+	const BUS_ONLY_COLOR = '#319151';
+	const ECLIPSE_COLOR = '#8059a6';
+
+	const isEclipse = (i: { type: IncidentType }) => i.type === IncidentType.Eclipse;
+	const incidentColor = (incident: (typeof incidents)[number]) =>
+		isEclipse(incident)
+			? ECLIPSE_COLOR
+			: isBusOnlyClosure(incident)
+				? BUS_ONLY_COLOR
+				: incident.isClosed
+					? CLOSED_COLOR
+					: CUTS_COLOR;
 
 	const pageTitle = $derived(m.page_title());
 	const pageDescription = $derived(m.page_description());
 
 	const hasBusOnly = $derived(incidents.some(isBusOnlyClosure));
+	const hasEclipse = $derived(incidents.some(isEclipse));
+	const closureCount = $derived(incidents.filter((i) => i.isClosed).length);
+	// Everything the cron kept that is not a full closure: traffic cuts and eclipse restrictions.
+	const restrictionCount = $derived(incidents.length - closureCount);
 </script>
 
 <svelte:head>
@@ -117,7 +137,9 @@
 						'size-2.5 shrink-0 rounded-full ring-4',
 						incidents.length === 0
 							? 'bg-[#319151] ring-[#319151]/15'
-							: 'bg-[#da272c] ring-[#da272c]/15'
+							: closureCount === 0
+								? 'bg-[#f3931a] ring-[#f3931a]/15'
+								: 'bg-[#da272c] ring-[#da272c]/15'
 					]}
 					aria-hidden="true"
 				></span>
@@ -126,9 +148,17 @@
 						{#if incidents.length === 0}
 							{m.home_no_closures()}
 						{:else}
-							<span>{incidents.length}</span>
-							{' '}
-							{incidents.length === 1 ? m.home_closures_one() : m.home_closures_other()}
+							{#if closureCount > 0}
+								<span>{closureCount}</span>
+								{' '}
+								{closureCount === 1 ? m.home_closures_one() : m.home_closures_other()}
+							{/if}
+							{#if restrictionCount > 0}
+								{#if closureCount > 0}<span class="opacity-50"> · </span>{/if}
+								<span>{restrictionCount}</span>
+								{' '}
+								{restrictionCount === 1 ? m.home_restrictions_one() : m.home_restrictions_other()}
+							{/if}
 						{/if}
 					</p>
 					<p class="hidden text-xs text-muted-foreground sm:block">{m.home_check_hint()}</p>
@@ -159,6 +189,18 @@
 				<span class="size-2 rounded-full bg-[#da272c]"></span>
 				{m.legend_road_closed()}
 			</span>
+			{#if restrictionCount > 0}
+				<span class="flex items-center gap-1.5">
+					<span class="size-2 rounded-full bg-[#f3931a]"></span>
+					{m.legend_road_cuts()}
+				</span>
+			{/if}
+			{#if hasEclipse}
+				<span class="flex items-center gap-1.5">
+					<span class="size-2 rounded-full bg-[#8059a6]"></span>
+					{m.legend_road_eclipse()}
+				</span>
+			{/if}
 			{#if hasBusOnly}
 				<span class="flex items-center gap-1.5">
 					<span class="size-2 rounded-full bg-[#319151]"></span>
@@ -179,7 +221,7 @@
 			{#each incidents as incident (incident.id)}
 				{@const isAffected = checker.affectedIds.has(incident.id)}
 				{@const busOnly = isBusOnlyClosure(incident)}
-				{@const color = busOnly ? '#319151' : incident.isClosed ? '#da272c' : '#f3931a'}
+				{@const color = incidentColor(incident)}
 				{#each incident.coordinates as line, i (i)}
 					<MapRoute
 						coordinates={line}
@@ -189,8 +231,9 @@
 					/>
 				{/each}
 
-				{#if incident.coordinates[0]?.[0]}
-					{@const [lng, lat] = incident.coordinates[0][0]}
+				{@const anchor = incident.location ?? incident.coordinates[0]?.[0]}
+				{#if anchor}
+					{@const [lng, lat] = anchor}
 					<MapMarker longitude={lng} latitude={lat}>
 						<MarkerContent>
 							<div
@@ -209,8 +252,12 @@
 									<span class="opacity-70">· {incident.type}</span>
 									{#if busOnly}
 										<span class="text-[#319151]">· {m.tooltip_bus_only()}</span>
+									{:else if isEclipse(incident)}
+										<span class="text-[#8059a6]">· {m.tooltip_eclipse()}</span>
 									{:else if incident.isClosed}
 										<span class="text-[#da272c]">· {m.tooltip_closed()}</span>
+									{:else if incident.hasTrafficCuts}
+										<span class="text-[#f3931a]">· {m.tooltip_traffic_cuts()}</span>
 									{/if}
 									{#if incident.onlyClosedOnWeekDays}
 										<span class="text-[#f3931a]">· {m.tooltip_weekdays_only()}</span>
