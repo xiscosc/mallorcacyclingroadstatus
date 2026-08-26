@@ -307,7 +307,7 @@
 				{m.footer_contact()}
 			</a>
 			<a
-				href="https://ko-fi.com/xiscosc"
+				href="https://revolut.me/xiscosc"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="inline-flex items-center gap-1.5 rounded-full bg-[#ff5e5b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform hover:scale-105 hover:bg-[#ff5e5b]/90"
