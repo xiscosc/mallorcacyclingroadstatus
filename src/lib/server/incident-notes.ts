@@ -9,7 +9,7 @@ const R2_KEY = 'incident-notes.json';
  */
 const MODEL = '@cf/google/gemma-4-26b-a4b-it';
 /** Bump whenever the prompt or schema changes so every cached summary is regenerated. */
-const PROMPT_VERSION = 2;
+const PROMPT_VERSION = 3;
 const MAX_SUMMARY_LENGTH = 60;
 
 type Summary = Pick<IncidentNote, 'eventName' | 'summary'>;
@@ -18,7 +18,7 @@ type Summary = Pick<IncidentNote, 'eventName' | 'summary'>;
 type SummaryCache = Record<string, Summary>;
 
 const SYSTEM_PROMPT = `You condense road-incident notices from Mallorca's road authority (written in Catalan, often partly in capitals) for road cyclists. Reply with JSON only.
-- "eventName": the proper name of the event that causes the incident (race, rally, festival...), in normal title case rather than capitals, without quotes or the organiser. Empty string when there is no named event (maintenance, roadworks, DGT restrictions...).
+- "eventName": the proper name of the event that causes the incident (race, rally, festival...), in normal title case rather than capitals, but keeping Roman numerals, acronyms and brand names exactly as written (e.g. "VI Rally 550 Challenge Mallorca", "Mallorca 312"), without quotes or the organiser. Empty string when there is no named event (maintenance, roadworks, DGT restrictions...).
 - "summary": one short phrase per language (en, de, es, ca), at most 40 characters, saying only why the road is affected (e.g. "Car rally", "Maintenance works"). Never mention days, dates, times, lanes, sides, directions, detours, the organiser, the event name or advice to check a website.`;
 
 const SCHEMA = {

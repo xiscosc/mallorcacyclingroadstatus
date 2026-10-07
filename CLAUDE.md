@@ -11,7 +11,7 @@ SvelteKit web app (`mallorcacyclingroads.cc`) that surfaces live road closures o
 Package manager is **Bun** (`bun.lock`, `.npmrc` enforces `engine-strict=true`).
 
 - `bun install` — install dependencies
-- `bun run dev` — start `vite dev` (uses `platformProxy` to expose R2/vars/secrets via `event.platform`, sharing Miniflare state with `wrangler dev`)
+- `bun run dev` — start `vite dev` (uses `platformProxy` to expose R2/vars/secrets via `event.platform`, sharing Miniflare state with `wrangler dev`). `remoteBindings: false` keeps it fully local so it runs without `wrangler login` — Workers AI is therefore unavailable in dev, which is fine since only the cron uses it. To see data locally, seed the local bucket: `bunx wrangler r2 object put mallorca-cycling-incidents/incidents.json --file <snapshot.json> --local`)
 - `bun run build` — `vite build` (produces `.svelte-kit/cloudflare/` consumed by `src/worker.ts`)
 - `bun run preview` — preview the production build
 - `bun run check` — `svelte-kit sync && svelte-check` (TypeScript + Svelte diagnostics)
