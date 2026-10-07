@@ -19,6 +19,10 @@ crons = ["0 */6 * * *"]
 binding = "INCIDENTS"
 bucket_name = "mallorca-cycling-incidents"
 
+# Workers AI condenses incident notes in the cron (results are cached in R2).
+[ai]
+binding = "AI"
+
 [observability]
 [observability.logs]
 enabled = true

@@ -23,6 +23,7 @@
 	"tooltip_bus_only": "bikes & coaches only",
 	"tooltip_weekdays_only": "weekdays only",
 	"tooltip_via": "via {provider}",
+	"more_info": "More info",
 	"footer_data_from": "Data from",
 	"footer_updated": "updated {time}",
 	"footer_contact": "Contact & Support",

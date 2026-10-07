@@ -1,23 +1,25 @@
 import type { R2Bucket } from '@cloudflare/workers-types';
-import type { Incident } from '$lib/incidents';
+import type { Incident, IncidentNote } from '$lib/incidents';
 
 const R2_KEY = 'incidents.json';
 const CACHE_KEY = 'https://cache.internal/incidents.json';
 const CACHE_TTL_SECONDS = 60 * 60;
 
-type Payload = { generatedAt: string; incidents: Incident[] };
+type Payload = { generatedAt: string; incidents: Incident[]; notes?: Record<string, IncidentNote> };
 
 export type IncidentsSnapshot = {
 	incidents: Incident[];
+	/** Shared remarks, keyed by `Incident.noteId`. */
+	notes: Record<string, IncidentNote>;
 	generatedAt: string | null;
 };
 
-function revive({ incidents, generatedAt }: Payload): IncidentsSnapshot {
+function revive({ incidents, notes = {}, generatedAt }: Payload): IncidentsSnapshot {
 	for (const i of incidents) {
 		if (i.startDate) i.startDate = new Date(i.startDate);
 		if (i.endDate) i.endDate = new Date(i.endDate);
 	}
-	return { incidents, generatedAt };
+	return { incidents, notes, generatedAt };
 }
 
 /**
@@ -28,7 +30,7 @@ export async function readIncidents(
 	bucket: R2Bucket | undefined,
 	cache?: Cache
 ): Promise<IncidentsSnapshot> {
-	if (!bucket) return { incidents: [], generatedAt: null };
+	if (!bucket) return { incidents: [], notes: {}, generatedAt: null };
 
 	if (cache) {
 		const hit = await cache.match(CACHE_KEY);
@@ -36,7 +38,7 @@ export async function readIncidents(
 	}
 
 	const obj = await bucket.get(R2_KEY);
-	if (!obj) return { incidents: [], generatedAt: null };
+	if (!obj) return { incidents: [], notes: {}, generatedAt: null };
 
 	const body = await obj.text();
 	if (cache) {

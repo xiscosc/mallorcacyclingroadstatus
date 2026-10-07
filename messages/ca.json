@@ -23,6 +23,7 @@
 	"tooltip_bus_only": "només bicis i autocars",
 	"tooltip_weekdays_only": "només entre setmana",
 	"tooltip_via": "via {provider}",
+	"more_info": "Més informació",
 	"footer_data_from": "Dades de",
 	"footer_updated": "actualitzat {time}",
 	"footer_contact": "Contacte i suport",

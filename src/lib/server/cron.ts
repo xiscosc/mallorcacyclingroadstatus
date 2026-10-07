@@ -1,12 +1,15 @@
-import type { R2Bucket } from '@cloudflare/workers-types';
+import type { Ai, R2Bucket } from '@cloudflare/workers-types';
 import { ConsellDeMallorcaArcGisProvider } from '$lib/server/incidents/consell-mallorca-arcgis';
 import { IncidentsProvider } from '$lib/server/incidents/provider';
 import { affectsRiders, type Incident } from '$lib/incidents';
 import { CYCLING_ROADS } from '$lib/cycling-roads';
 import { invalidateIncidentsCache } from '$lib/server/incidents-store';
+import { groupIncidentNotes } from '$lib/server/incident-notes';
 
 export interface CronEnv {
 	INCIDENTS: R2Bucket;
+	/** Workers AI, used to condense incident notes. Optional: without it notes stay raw. */
+	AI?: Ai;
 	CONSELL_POINTS_URL: string;
 	CONSELL_LINES_URL: string;
 }
@@ -56,10 +59,11 @@ export async function runCron(env: CronEnv): Promise<CronResult> {
 		return { ok: false, count: 0, providers: report, generatedAt: null };
 	}
 
+	const { incidents, notes } = await groupIncidentNotes(all, env.INCIDENTS, env.AI);
 	const generatedAt = new Date().toISOString();
-	await env.INCIDENTS.put(R2_KEY, JSON.stringify({ generatedAt, incidents: all }), {
+	await env.INCIDENTS.put(R2_KEY, JSON.stringify({ generatedAt, incidents, notes }), {
 		httpMetadata: { contentType: 'application/json; charset=utf-8' }
 	});
 	await invalidateIncidentsCache((caches as CacheStorage & { default: Cache }).default);
-	return { ok: true, count: all.length, providers: report, generatedAt };
+	return { ok: true, count: incidents.length, providers: report, generatedAt };
 }

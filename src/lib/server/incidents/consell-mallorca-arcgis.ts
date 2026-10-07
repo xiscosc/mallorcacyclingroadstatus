@@ -105,7 +105,7 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 			const anchor = f.geometry;
 			// A row with neither a stretch nor an anchor cannot be placed on the map.
 			if (!paths.length && !anchor) continue;
-			const observacions = info.observacions ?? '';
+			const observacions = info.observacions?.trim() ?? '';
 			incidents.push({
 				id: String(info.idlocalit),
 				providerName: this.displayName,
@@ -118,19 +118,19 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 				type: TYPE_BY_CAUSA[info.causa ?? ''] ?? IncidentType.Other,
 				coordinates: paths.map((path) => path.map(lineToLngLat)),
 				location: anchor ? pointToLngLat([anchor.x, anchor.y]) : undefined,
+				notes: observacions || undefined,
+				moreInfoUrl: this.parseWebUrl(info.url),
 				meta: {
 					idinciden: info.idinciden,
 					causa: info.causa,
 					afeccio: info.afeccio,
 					gravetat: info.gravetat,
-					observacions,
 					sentit: info.sentit,
 					pkinici: info.pkinici,
 					pkfin: info.pkfin,
 					desinici: info.desinici,
 					desfin: info.desfin,
-					hex_color: info.hex_color,
-					url: info.url
+					hex_color: info.hex_color
 				}
 			});
 		}
@@ -149,6 +149,17 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 	private parseEpoch(value: number | null | undefined): Date | undefined {
 		if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
 		return new Date(value);
+	}
+
+	/** The link ends up in an `href`, so anything but a well-formed http(s) URL is dropped. */
+	private parseWebUrl(value: string | null | undefined): string | undefined {
+		if (!value) return undefined;
+		try {
+			const url = new URL(value.trim());
+			return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : undefined;
+		} catch {
+			return undefined;
+		}
 	}
 
 	/** Layers declare their own CRS: pass WGS84 through, reproject UTM 31N, reject anything else. */

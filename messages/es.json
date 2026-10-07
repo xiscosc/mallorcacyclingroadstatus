@@ -23,6 +23,7 @@
 	"tooltip_bus_only": "solo bicis y autocares",
 	"tooltip_weekdays_only": "solo entre semana",
 	"tooltip_via": "vía {provider}",
+	"more_info": "Más información",
 	"footer_data_from": "Datos de",
 	"footer_updated": "actualizado {time}",
 	"footer_contact": "Contacto y soporte",

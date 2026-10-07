@@ -23,6 +23,7 @@
 	"tooltip_bus_only": "nur Räder & Reisebusse",
 	"tooltip_weekdays_only": "nur werktags",
 	"tooltip_via": "via {provider}",
+	"more_info": "Mehr Infos",
 	"footer_data_from": "Daten von",
 	"footer_updated": "aktualisiert {time}",
 	"footer_contact": "Kontakt & Support",

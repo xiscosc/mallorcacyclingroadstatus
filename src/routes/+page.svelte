@@ -18,6 +18,7 @@
 	import EclipseBanner from '$lib/components/eclipse-banner.svelte';
 	import BikeRentalBanner from '$lib/components/bike-rental-banner.svelte';
 	import LanguageSwitcher from '$lib/components/language-switcher.svelte';
+	import IncidentNote from '$lib/components/incident-note.svelte';
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
@@ -177,7 +178,7 @@
 
 	<EclipseBanner />
 
-	<RouteCheckBanner {checker} />
+	<RouteCheckBanner {checker} notes={data.notes} />
 
 	<Card
 		class="relative h-[60dvh] overflow-hidden p-0 shadow-lg ring-1 ring-border/70 sm:h-auto sm:min-h-[400px] sm:flex-1"
@@ -266,6 +267,10 @@
 								<div class="text-[10px] opacity-60">
 									{fmtDate(incident.startDate)} → {fmtDate(incident.endDate)}
 								</div>
+								<IncidentNote
+									note={incident.noteId ? data.notes[incident.noteId] : undefined}
+									class="text-[11px] leading-snug"
+								/>
 								<div class="text-[10px] opacity-50">
 									{m.tooltip_via({ provider: incident.providerName })}
 								</div>

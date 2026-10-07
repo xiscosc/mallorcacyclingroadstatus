@@ -27,6 +27,7 @@ declare global {
 		interface Platform {
 			env: {
 				INCIDENTS: R2Bucket;
+				AI: Ai;
 				CONSELL_POINTS_URL: string;
 				CONSELL_LINES_URL: string;
 				TURNSTILE_SITE_KEY: string;
