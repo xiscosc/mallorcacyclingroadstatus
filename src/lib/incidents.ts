@@ -48,6 +48,11 @@ export type Incident = {
 	moreInfoUrl?: string;
 	/** Key into the snapshot's note table, replacing `notes`/`moreInfoUrl` once stored. */
 	noteId?: string;
+	/**
+	 * Closed to private cars only — coaches and cyclists still pass (see
+	 * `isBusOnlyClosure`). Resolved from the remark when the snapshot is read.
+	 */
+	busOnly?: boolean;
 	/** Source-specific extras that don't fit the common shape. */
 	meta: Record<string, unknown>;
 };

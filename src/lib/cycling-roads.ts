@@ -262,15 +262,20 @@ const BUS_ONLY_CLOSURE_PATTERNS: readonly { road: string; observation: RegExp }[
 	{ road: 'Ma-2210', observation: /Restriccions de la DGT/i }
 ];
 
-export function isBusOnlyClosure(incident: {
-	roadName: string;
-	isClosed: boolean;
-	meta: Record<string, unknown>;
-}): boolean {
-	if (!incident.isClosed) return false;
-	const observations =
-		typeof incident.meta.observacions === 'string' ? incident.meta.observacions : '';
+export function matchesBusOnlyClosure(
+	incident: { roadName: string; isClosed: boolean },
+	observations: string | undefined
+): boolean {
+	if (!incident.isClosed || !observations) return false;
 	return BUS_ONLY_CLOSURE_PATTERNS.some(
 		(p) => p.road === incident.roadName && p.observation.test(observations)
 	);
+}
+
+/**
+ * The remark lives in the snapshot's shared note table, not on the incident, so the
+ * match runs server-side when the snapshot is read (`readIncidents`) and sets `busOnly`.
+ */
+export function isBusOnlyClosure(incident: { busOnly?: boolean }): boolean {
+	return incident.busOnly === true;
 }
