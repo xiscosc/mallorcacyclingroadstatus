@@ -1,5 +1,6 @@
 import type { R2Bucket } from '@cloudflare/workers-types';
 import type { Incident, IncidentNote } from '$lib/incidents';
+import { matchesBusOnlyClosure } from '$lib/cycling-roads';
 
 const R2_KEY = 'incidents.json';
 const CACHE_KEY = 'https://cache.internal/incidents.json';
@@ -18,6 +19,11 @@ function revive({ incidents, notes = {}, generatedAt }: Payload): IncidentsSnaps
 	for (const i of incidents) {
 		if (i.startDate) i.startDate = new Date(i.startDate);
 		if (i.endDate) i.endDate = new Date(i.endDate);
+		// Snapshots written before notes were grouped still carry the remark in `meta`.
+		const legacy = typeof i.meta?.observacions === 'string' ? i.meta.observacions : undefined;
+		const observations = i.noteId ? notes[i.noteId]?.text : legacy;
+		// Matched on read rather than in the cron so pattern edits apply immediately.
+		i.busOnly = matchesBusOnlyClosure(i, observations);
 	}
 	return { incidents, notes, generatedAt };
 }
