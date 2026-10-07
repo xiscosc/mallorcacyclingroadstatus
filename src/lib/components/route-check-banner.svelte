@@ -12,8 +12,10 @@
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Clock from '@lucide/svelte/icons/clock';
 	import X from '@lucide/svelte/icons/x';
+	import IncidentNote from '$lib/components/incident-note.svelte';
+	import type { IncidentNote as Note } from '$lib/incidents';
 
-	let { checker }: { checker: RouteChecker } = $props();
+	let { checker, notes }: { checker: RouteChecker; notes: Record<string, Note> } = $props();
 
 	const fmt = (d: Date | undefined) =>
 		d ? DateTime.fromJSDate(d).setZone('Europe/Madrid').toFormat('dd LLL HH:mm') : '—';
@@ -92,6 +94,7 @@
 								<span>{fmtRange(inc.startDate, inc.endDate)}</span>
 							</div>
 						{/if}
+						<IncidentNote note={inc.noteId ? notes[inc.noteId] : undefined} class="text-xs" />
 					</li>
 				{/each}
 			</ul>

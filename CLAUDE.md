@@ -33,6 +33,7 @@ Local secrets: copy `.dev.vars.example` → `.dev.vars` (gitignored) and fill in
 `wrangler.toml` defines:
 
 - R2 binding `INCIDENTS` (bucket `mallorca-cycling-incidents`)
+- Workers AI binding `AI` (used only by the cron, see incident notes below)
 - Cron `0 */6 * * *` (every 6 hours UTC)
 - Custom domain route `mallorcacyclingroads.cc`
 - `vars.TURNSTILE_SITE_KEY` (public); secrets set via `wrangler secret put`
@@ -40,8 +41,9 @@ Local secrets: copy `.dev.vars.example` → `.dev.vars` (gitignored) and fill in
 ### Incidents pipeline
 
 1. **Cron** (`src/lib/server/cron.ts`) iterates `IncidentsProvider` instances, asking each for `CYCLING_ROADS` (curated list in `src/lib/cycling-roads.ts`) and keeping whatever passes `affectsRiders` (`src/lib/incidents.ts`): full closures, traffic cuts, and eclipse restrictions. Roadworks that only warn (`Precaució`, `Sense restriccions`, `Estrenyiment de calçada`) are dropped as noise on a bike. **Partial-failure tolerant**: if any provider succeeds the merged result is written to R2 key `incidents.json`; if **all** providers fail nothing is written, preserving last-known-good data.
-2. **R2 store** (`src/lib/server/incidents-store.ts`) wraps reads behind a Cloudflare edge cache (`CACHE_KEY = https://cache.internal/incidents.json`, TTL 1h). After every cron write, `invalidateIncidentsCache` deletes the cache entry so the next request repopulates from R2. Date strings are revived to `Date` on read.
-3. **Page load** (`src/routes/+page.server.ts`) calls `readIncidents(platform.env.INCIDENTS, platform.caches.default)` and returns the snapshot plus `turnstileSiteKey` to the client.
+2. **Incident notes** (`src/lib/server/incident-notes.ts`): providers emit raw `notes` (the source's free-text remark, Catalan for the Consell) and `moreInfoUrl`. The same remark repeats across every stretch of an event, so `groupIncidentNotes` groups them by content hash into a snapshot-level `notes` table and leaves only a `noteId` on each incident. Each distinct note is condensed once by Workers AI (`@cf/google/gemma-4-26b-a4b-it`, strict JSON schema, thinking off — ~7 neurons/note) into an untranslated `eventName` plus a short per-locale `summary` (the reason only — no schedule, lanes, sides, detours). Results are cached in R2 key `incident-notes.json` keyed by hash of prompt version + model + text + URL, so the model only runs for unseen text; entries for notes that left the feed are pruned. **Bump `PROMPT_VERSION` when changing the prompt or schema.** Failed or invalid generations are not cached (retried next run) and the UI falls back to the raw text (`src/lib/components/incident-note.svelte`).
+3. **R2 store** (`src/lib/server/incidents-store.ts`) wraps reads behind a Cloudflare edge cache (`CACHE_KEY = https://cache.internal/incidents.json`, TTL 1h). After every cron write, `invalidateIncidentsCache` deletes the cache entry so the next request repopulates from R2. Date strings are revived to `Date` on read.
+4. **Page load** (`src/routes/+page.server.ts`) calls `readIncidents(platform.env.INCIDENTS, platform.caches.default)` and returns the snapshot (`incidents`, `notes`, `generatedAt`) plus `turnstileSiteKey` to the client.
 
 ### Provider abstraction
 
