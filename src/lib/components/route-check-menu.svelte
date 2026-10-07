@@ -12,6 +12,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { cn } from '$lib/utils.js';
+	import PoweredByStrava from '$lib/components/powered-by-strava.svelte';
 	import Icon from '@iconify/svelte';
 	import Upload from '@lucide/svelte/icons/upload';
 	import Route from '@lucide/svelte/icons/route';
@@ -200,10 +201,9 @@
 			<Icon icon="simple-icons:komoot" width="16" height="16" style="color: #006341" />
 			<span>{m.check_menu_komoot()}</span>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item disabled>
+		<DropdownMenu.Item onSelect={() => (stravaOpen = true)}>
 			<Icon icon="simple-icons:strava" width="16" height="16" style="color: #fc4c02" />
 			<span>{m.check_menu_strava()}</span>
-			<span class="ml-auto text-xs text-muted-foreground">{m.check_menu_soon()}</span>
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
@@ -342,26 +342,37 @@
 							autocomplete="off"
 						/>
 					</div>
-					<Dialog.Footer>
-						<Dialog.Close>
-							{#snippet child({ props })}
-								<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
-							{/snippet}
-						</Dialog.Close>
-						<Button type="submit" disabled={!stravaUrl.trim()}>{m.strava_dialog_submit()}</Button>
+					<Dialog.Footer class="items-center sm:justify-between">
+						<PoweredByStrava />
+						<div class="flex gap-2">
+							<Dialog.Close>
+								{#snippet child({ props })}
+									<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
+								{/snippet}
+							</Dialog.Close>
+							<Button type="submit" disabled={!stravaUrl.trim()}>{m.strava_dialog_submit()}</Button>
+						</div>
 					</Dialog.Footer>
 				</form>
 			</div>
 		{:else}
 			<div class="flex flex-col gap-4">
+				<!-- Strava's official, unmodified button (48px tall) — required by its brand guidelines. -->
 				<a
 					href={resolve('/auth/strava')}
-					class="inline-flex items-center justify-center gap-2 rounded-md bg-[#fc4c02] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#fc4c02]/90"
+					class="self-center rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 				>
-					<Icon icon="simple-icons:strava" width="16" height="16" />
-					{m.strava_dialog_connect()}
+					<img
+						src="/strava/connect-with-strava.svg"
+						alt={m.strava_dialog_connect()}
+						width="237"
+						height="48"
+						class="h-12 w-auto"
+					/>
 				</a>
-				<Dialog.Footer>
+				<p class="text-center text-xs text-muted-foreground">{m.strava_dialog_gpx_hint()}</p>
+				<Dialog.Footer class="items-center sm:justify-between">
+					<PoweredByStrava />
 					<Dialog.Close>
 						{#snippet child({ props })}
 							<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
