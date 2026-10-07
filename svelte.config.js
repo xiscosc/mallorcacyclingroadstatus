@@ -17,7 +17,10 @@ const config = {
 			// event.platform. Uses the same Miniflare state `wrangler dev` uses,
 			// so `vite dev` sees whatever the cron handler wrote to R2.
 			platformProxy: {
-				persist: true
+				persist: true,
+				// Workers AI (wrangler.toml `[ai]`) only exists remotely, and a remote binding
+				// makes every dev request 500 without `wrangler login`. Only the cron uses it.
+				remoteBindings: false
 			}
 		})
 	}
