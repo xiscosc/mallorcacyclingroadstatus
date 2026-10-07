@@ -13,6 +13,7 @@
 	import Clock from '@lucide/svelte/icons/clock';
 	import X from '@lucide/svelte/icons/x';
 	import IncidentNote from '$lib/components/incident-note.svelte';
+	import PoweredByStrava from '$lib/components/powered-by-strava.svelte';
 	import type { IncidentNote as Note } from '$lib/incidents';
 
 	let { checker, notes }: { checker: RouteChecker; notes: Record<string, Note> } = $props();
@@ -70,6 +71,24 @@
 			{checker.track.name ?? m.banner_route_unnamed()}
 		</Alert.Description>
 
+		{#if checker.stravaRouteId}
+			<!-- Strava's guidelines require a link back to the source, with this exact (untranslated) text. -->
+			<div class="col-start-2 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external link to Strava -->
+				<a
+					href="https://www.strava.com/routes/{checker.stravaRouteId}"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-1 text-xs font-bold text-[#FC5200] underline underline-offset-2"
+				>
+					View on Strava
+					<ExternalLink class="size-3" />
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				<PoweredByStrava />
+			</div>
+		{/if}
+
 		{#if !ok}
 			<ul class="col-start-2 mt-3 flex flex-col gap-2">
 				{#each checker.affected as inc (inc.id)}
@@ -126,6 +145,7 @@
 					{:else}
 						{m.banner_eclipse_note_other({ roads: uniqueRoadNames(eclipse) })}
 					{/if}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 					<a
 						href={ECLIPSE_INFO_URL}
 						target="_blank"
@@ -135,6 +155,7 @@
 						{m.eclipse_banner_link()}
 						<ExternalLink class="size-3" />
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</p>
 			</div>
 		{/if}

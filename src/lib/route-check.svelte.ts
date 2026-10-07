@@ -15,10 +15,14 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 	let affected = $state<Incident[] | null>(null);
 	let busOnly = $state<Incident[] | null>(null);
 	let eclipse = $state<Incident[] | null>(null);
+	/** Set when the checked route came from Strava, so the UI can link back to it. */
+	let stravaRouteId = $state<string | null>(null);
 	let error = $state<string | null>(null);
 	let isProcessing = $state(false);
 
 	const affectedIds = $derived(
+		// Rebuilt by `$derived` on every change and never mutated, so a plain Set is enough.
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		new Set([
 			...(affected?.map((i) => i.id) ?? []),
 			...(busOnly?.map((i) => i.id) ?? []),
@@ -46,6 +50,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		eclipse = null;
+		stravaRouteId = null;
 		isProcessing = true;
 		try {
 			const text = await file.text();
@@ -63,6 +68,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		eclipse = null;
+		stravaRouteId = null;
 		isProcessing = true;
 		try {
 			const form = new FormData();
@@ -94,10 +100,12 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		eclipse = null;
+		stravaRouteId = null;
 		isProcessing = true;
 		try {
 			const gpx = await fetchStravaRouteGpx(routeId, accessToken.trim());
 			await checkTrack(parseGpx(gpx));
+			stravaRouteId = routeId;
 		} catch (err) {
 			error = err instanceof Error ? err.message : m.error_failed_load_strava();
 		} finally {
@@ -113,6 +121,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 			affected = null;
 			busOnly = null;
 			eclipse = null;
+			stravaRouteId = null;
 			return;
 		}
 		await loadStravaRouteId(parsed.routeId, accessToken);
@@ -123,6 +132,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		eclipse = null;
+		stravaRouteId = null;
 		error = null;
 	}
 
@@ -141,6 +151,9 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		},
 		get error() {
 			return error;
+		},
+		get stravaRouteId() {
+			return stravaRouteId;
 		},
 		get isProcessing() {
 			return isProcessing;

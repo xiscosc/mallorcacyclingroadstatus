@@ -18,6 +18,10 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 	const storedState = cookies.get(STRAVA_OAUTH_STATE_COOKIE);
 	cookies.delete(STRAVA_OAUTH_STATE_COOKIE, { path: '/' });
 
+	// The athlete declined on Strava's consent screen (`error=access_denied`): not a
+	// failure worth an error page, just go back to the map.
+	if (url.searchParams.has('error')) redirect(302, '/');
+
 	if (!code || !state || !storedState || state !== storedState) {
 		error(400, 'Invalid OAuth state');
 	}
