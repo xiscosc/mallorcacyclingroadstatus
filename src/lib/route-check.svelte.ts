@@ -2,8 +2,9 @@ import { deserialize } from '$app/forms';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
 import { fetchStravaRouteGpx, parseStravaUrl } from './strava';
 import { isBusOnlyClosure } from './cycling-roads';
-import { IncidentType, type Incident } from '$lib/incidents';
+import type { Incident } from '$lib/incidents';
 import { m } from '$lib/paraglide/messages';
+import { DateTime } from 'luxon';
 
 /**
  * Reactive checker that takes a GPX file (soon: also a remote tour URL),
@@ -14,34 +15,39 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 	let track = $state<ParsedGpx | null>(null);
 	let affected = $state<Incident[] | null>(null);
 	let busOnly = $state<Incident[] | null>(null);
-	let eclipse = $state<Incident[] | null>(null);
 	/** Set when the checked route came from Strava, so the UI can link back to it. */
 	let stravaRouteId = $state<string | null>(null);
 	let error = $state<string | null>(null);
 	let isProcessing = $state(false);
+	/** `yyyy-MM-dd` the rider picked; empty means any day. Filters the banner and the map. */
+	let rideDate = $state('');
 
 	const affectedIds = $derived(
 		// Rebuilt by `$derived` on every change and never mutated, so a plain Set is enough.
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		new Set([
-			...(affected?.map((i) => i.id) ?? []),
-			...(busOnly?.map((i) => i.id) ?? []),
-			...(eclipse?.map((i) => i.id) ?? [])
-		])
+		new Set([...(affected?.map((i) => i.id) ?? []), ...(busOnly?.map((i) => i.id) ?? [])])
 	);
 
-	const isEclipse = (i: Incident) => i.type === IncidentType.Eclipse;
+	const onRideDate = (inc: Incident) => {
+		if (!rideDate) return true;
+		const day = DateTime.fromISO(rideDate, { zone: 'Europe/Madrid' });
+		// Weekday-only closures skip weekends; public holidays aren't known, so those still count.
+		if (inc.onlyClosedOnWeekDays && day.weekday > 5) return false;
+		return (
+			(!inc.startDate || inc.startDate <= day.endOf('day').toJSDate()) &&
+			(!inc.endDate || inc.endDate >= day.startOf('day').toJSDate())
+		);
+	};
 
 	async function checkTrack(parsed: ParsedGpx): Promise<void> {
 		// Yield once so the loader paints before we start the distance math.
 		await new Promise((r) => setTimeout(r, 0));
 		const hits = await findAffectedIncidents(parsed, getIncidents());
 		track = parsed;
-		// Bus-only and eclipse restrictions get their own note in the banner: they are
-		// not route blockers for a cyclist, so they stay out of `affected`.
+		// Bus-only closures get their own note in the banner: they are not route
+		// blockers for a cyclist, so they stay out of `affected`.
 		busOnly = hits.filter(isBusOnlyClosure);
-		eclipse = hits.filter(isEclipse);
-		affected = hits.filter((h) => !isBusOnlyClosure(h) && !isEclipse(h));
+		affected = hits.filter((h) => !isBusOnlyClosure(h));
 	}
 
 	async function loadGpx(file: File): Promise<void> {
@@ -49,8 +55,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
-		eclipse = null;
 		stravaRouteId = null;
+		rideDate = '';
 		isProcessing = true;
 		try {
 			const text = await file.text();
@@ -67,8 +73,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
-		eclipse = null;
 		stravaRouteId = null;
+		rideDate = '';
 		isProcessing = true;
 		try {
 			const form = new FormData();
@@ -99,8 +105,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
-		eclipse = null;
 		stravaRouteId = null;
+		rideDate = '';
 		isProcessing = true;
 		try {
 			const gpx = await fetchStravaRouteGpx(routeId, accessToken.trim());
@@ -120,8 +126,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 			track = null;
 			affected = null;
 			busOnly = null;
-			eclipse = null;
 			stravaRouteId = null;
+			rideDate = '';
 			return;
 		}
 		await loadStravaRouteId(parsed.routeId, accessToken);
@@ -131,8 +137,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		track = null;
 		affected = null;
 		busOnly = null;
-		eclipse = null;
 		stravaRouteId = null;
+		rideDate = '';
 		error = null;
 	}
 
@@ -146,9 +152,6 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		get busOnly() {
 			return busOnly;
 		},
-		get eclipse() {
-			return eclipse;
-		},
 		get error() {
 			return error;
 		},
@@ -161,6 +164,13 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		get affectedIds() {
 			return affectedIds;
 		},
+		get rideDate() {
+			return rideDate;
+		},
+		set rideDate(value: string) {
+			rideDate = value;
+		},
+		onRideDate,
 		loadGpx,
 		loadKomoot,
 		loadStrava,
