@@ -13,6 +13,8 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import CalendarDays from '@lucide/svelte/icons/calendar-days';
 	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button';
+	import { tick } from 'svelte';
 	import PoweredByStrava from '$lib/components/powered-by-strava.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import type { Incident, IncidentNote as Note } from '$lib/incidents';
@@ -22,6 +24,19 @@
 	const VISIBLE_EVENTS = 3;
 	let expanded = $state(false);
 	const today = DateTime.now().setZone('Europe/Madrid').toISODate();
+	let dateInput = $state<HTMLInputElement | null>(null);
+
+	// The input only appears once a date is set: an empty one shows today's date in
+	// Safari without filtering anything. Start from today and open the native picker.
+	async function pickRideDate() {
+		checker.rideDate = today ?? '';
+		await tick();
+		try {
+			dateInput?.showPicker();
+		} catch {
+			dateInput?.focus(); // showPicker is missing or blocked: the field is still there to tap
+		}
+	}
 
 	const affected = $derived((checker.affected ?? []).filter(checker.onRideDate));
 
@@ -150,11 +165,43 @@
 		{/if}
 
 		{#if anyHits}
-			<label class="col-span-full mt-3 flex items-center gap-2 text-sm font-medium text-foreground">
-				<CalendarDays class="size-4 shrink-0" />
-				{m.banner_ride_date()}
-				<Input type="date" bind:value={checker.rideDate} min={today} class="w-auto flex-1" />
-			</label>
+			{#if checker.rideDate}
+				<div class="col-span-full mt-3 flex items-center gap-2 text-sm font-medium text-foreground">
+					<label class="flex flex-1 items-center gap-2">
+						<CalendarDays class="size-4 shrink-0" />
+						{m.banner_ride_date()}
+						<Input
+							type="date"
+							bind:ref={dateInput}
+							bind:value={checker.rideDate}
+							min={today}
+							required
+							class="w-auto flex-1"
+						/>
+					</label>
+					<button
+						type="button"
+						onclick={() => (checker.rideDate = '')}
+						aria-label={m.banner_clear_ride_date()}
+						title={m.banner_clear_ride_date()}
+						class="rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
+					>
+						<X class="size-4" />
+					</button>
+				</div>
+			{:else}
+				<Button
+					variant="outline"
+					onclick={pickRideDate}
+					class="col-span-full mt-3 w-full text-foreground sm:w-fit"
+				>
+					<CalendarDays />
+					{m.banner_pick_ride_date()}
+				</Button>
+			{/if}
+			<p class="col-span-full mt-1.5 text-xs text-muted-foreground">
+				{m.banner_data_disclaimer()}
+			</p>
 		{/if}
 
 		{#if !ok}
