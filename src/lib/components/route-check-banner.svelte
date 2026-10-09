@@ -142,27 +142,23 @@
 				{m.banner_route_incidents_other({ count: groups.length })}
 			{/if}
 		</Alert.Title>
-		<Alert.Description class="pr-8 opacity-80">
-			{checker.track.name ?? m.banner_route_unnamed()}
-		</Alert.Description>
-
-		{#if checker.stravaRouteId}
-			<!-- Strava's guidelines require a link back to the source, with this exact (untranslated) text. -->
-			<div class="col-start-2 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+		<Alert.Description class="flex flex-wrap items-center gap-x-2 pr-8">
+			<span class="opacity-80">{checker.track.name ?? m.banner_route_unnamed()}</span>
+			{#if checker.stravaRouteId}
+				<!-- Strava's guidelines require a link back to the source, with this exact (untranslated) text. -->
 				<!-- eslint-disable svelte/no-navigation-without-resolve -- external link to Strava -->
 				<a
 					href="https://www.strava.com/routes/{checker.stravaRouteId}"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1 text-xs font-bold text-[#FC5200] underline underline-offset-2"
+					class="inline-flex items-center gap-1 text-xs font-bold text-[#FC5200]! underline underline-offset-2"
 				>
 					View on Strava
 					<ExternalLink class="size-3" />
 				</a>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				<PoweredByStrava />
-			</div>
-		{/if}
+			{/if}
+		</Alert.Description>
 
 		{#if anyHits}
 			{#if checker.rideDate}
@@ -293,6 +289,10 @@
 					{/if}
 				</p>
 			</div>
+		{/if}
+
+		{#if checker.stravaRouteId}
+			<PoweredByStrava class="col-span-full mt-3 justify-end" />
 		{/if}
 
 		<button
