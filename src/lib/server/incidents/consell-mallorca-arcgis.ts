@@ -47,8 +47,7 @@ const UTM_31N_WKIDS = new Set([25831, 32631]);
 const TYPE_BY_CAUSA: Record<string, IncidentType> = {
 	'Prova esportiva': IncidentType.Sports,
 	Manteniment: IncidentType.Maintenance,
-	Obres: IncidentType.Maintenance,
-	Eclipsi: IncidentType.Eclipse
+	Obres: IncidentType.Maintenance
 };
 
 /**

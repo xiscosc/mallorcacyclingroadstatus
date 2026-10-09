@@ -3,7 +3,6 @@ import type { Locale } from '$lib/paraglide/runtime';
 export enum IncidentType {
 	Sports = 'Sports',
 	Maintenance = 'Maintenance',
-	Eclipse = 'Eclipse',
 	Other = 'Other'
 }
 
@@ -81,11 +80,10 @@ export type LoadOptions = {
 };
 
 /**
- * Whether an incident is worth putting in front of a rider: the road is shut, the
- * traffic is being cut, or it falls under the eclipse-day restrictions. Everything
- * else the sources publish (roadworks with no restriction, narrowed lanes, "take
+ * Whether an incident is worth putting in front of a rider: the road is shut or the
+ * traffic is being cut. Everything else the sources publish (roadworks with no restriction, narrowed lanes, "take
  * care" notices) is noise on a bike and is dropped by the cron.
  */
 export function affectsRiders(incident: Incident): boolean {
-	return incident.isClosed || incident.hasTrafficCuts || incident.type === IncidentType.Eclipse;
+	return incident.isClosed || incident.hasTrafficCuts;
 }

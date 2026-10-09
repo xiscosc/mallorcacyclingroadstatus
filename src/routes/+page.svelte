@@ -15,7 +15,6 @@
 	import { createRouteChecker } from '$lib/route-check.svelte';
 	import RouteCheckMenu from '$lib/components/route-check-menu.svelte';
 	import RouteCheckBanner from '$lib/components/route-check-banner.svelte';
-	import EclipseBanner from '$lib/components/eclipse-banner.svelte';
 	import BikeRentalBanner from '$lib/components/bike-rental-banner.svelte';
 	import LanguageSwitcher from '$lib/components/language-switcher.svelte';
 	import IncidentNote from '$lib/components/incident-note.svelte';
@@ -39,6 +38,7 @@
 	});
 
 	const checker = createRouteChecker(() => incidents);
+	const mapIncidents = $derived(incidents.filter(checker.onRideDate));
 
 	// Framed to show the whole island on both phone and desktop aspect ratios.
 	const initialZoom = browser && window.matchMedia('(max-width: 640px)').matches ? 8.3 : 9.2;
@@ -52,32 +52,22 @@
 	const EMOJI: Record<IncidentType, string> = {
 		[IncidentType.Sports]: '🏅',
 		[IncidentType.Maintenance]: '🚧',
-		[IncidentType.Eclipse]: '🌒',
 		[IncidentType.Other]: '⚠️'
 	};
 
 	const CLOSED_COLOR = '#da272c';
 	const CUTS_COLOR = '#f3931a';
 	const BUS_ONLY_COLOR = '#319151';
-	const ECLIPSE_COLOR = '#8059a6';
 
-	const isEclipse = (i: { type: IncidentType }) => i.type === IncidentType.Eclipse;
 	const incidentColor = (incident: (typeof incidents)[number]) =>
-		isEclipse(incident)
-			? ECLIPSE_COLOR
-			: isBusOnlyClosure(incident)
-				? BUS_ONLY_COLOR
-				: incident.isClosed
-					? CLOSED_COLOR
-					: CUTS_COLOR;
+		isBusOnlyClosure(incident) ? BUS_ONLY_COLOR : incident.isClosed ? CLOSED_COLOR : CUTS_COLOR;
 
 	const pageTitle = $derived(m.page_title());
 	const pageDescription = $derived(m.page_description());
 
 	const hasBusOnly = $derived(incidents.some(isBusOnlyClosure));
-	const hasEclipse = $derived(incidents.some(isEclipse));
 	const closureCount = $derived(incidents.filter((i) => i.isClosed).length);
-	// Everything the cron kept that is not a full closure: traffic cuts and eclipse restrictions.
+	// Everything the cron kept that is not a full closure: traffic cuts.
 	const restrictionCount = $derived(incidents.length - closureCount);
 </script>
 
@@ -176,8 +166,6 @@
 		</div>
 	</section>
 
-	<EclipseBanner />
-
 	<RouteCheckBanner {checker} notes={data.notes} />
 
 	<Card
@@ -194,12 +182,6 @@
 				<span class="flex items-center gap-1.5">
 					<span class="size-2 rounded-full bg-[#f3931a]"></span>
 					{m.legend_road_cuts()}
-				</span>
-			{/if}
-			{#if hasEclipse}
-				<span class="flex items-center gap-1.5">
-					<span class="size-2 rounded-full bg-[#8059a6]"></span>
-					{m.legend_road_eclipse()}
 				</span>
 			{/if}
 			{#if hasBusOnly}
@@ -219,7 +201,7 @@
 			{#if checker.track}
 				<MapRoute coordinates={checker.track.coordinates} color="#3b82f6" width={5} opacity={0.9} />
 			{/if}
-			{#each incidents as incident (incident.id)}
+			{#each mapIncidents as incident (incident.id)}
 				{@const isAffected = checker.affectedIds.has(incident.id)}
 				{@const busOnly = isBusOnlyClosure(incident)}
 				{@const color = incidentColor(incident)}
@@ -253,8 +235,6 @@
 									<span class="opacity-70">· {incident.type}</span>
 									{#if busOnly}
 										<span class="text-[#319151]">· {m.tooltip_bus_only()}</span>
-									{:else if isEclipse(incident)}
-										<span class="text-[#8059a6]">· {m.tooltip_eclipse()}</span>
 									{:else if incident.isClosed}
 										<span class="text-[#da272c]">· {m.tooltip_closed()}</span>
 									{:else if incident.hasTrafficCuts}
