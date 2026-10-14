@@ -1,6 +1,8 @@
 import { deserialize } from '$app/forms';
+import { invalidateAll } from '$app/navigation';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
 import { fetchStravaRouteGpx, parseStravaUrl } from './strava';
+import { parseRideWithGpsUrl } from './ridewithgps';
 import { isBusOnlyClosure } from './cycling-roads';
 import type { Incident } from '$lib/incidents';
 import { m } from '$lib/paraglide/messages';
@@ -17,6 +19,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 	let busOnly = $state<Incident[] | null>(null);
 	/** Set when the checked route came from Strava, so the UI can link back to it. */
 	let stravaRouteId = $state<string | null>(null);
+	/** Same, for a route loaded from Ride with GPS. */
+	let rideWithGpsRouteId = $state<string | null>(null);
 	let error = $state<string | null>(null);
 	let isProcessing = $state(false);
 	/** `yyyy-MM-dd` the rider picked; empty means any day. Filters the banner and the map. */
@@ -56,6 +60,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		stravaRouteId = null;
+		rideWithGpsRouteId = null;
 		rideDate = '';
 		isProcessing = true;
 		try {
@@ -74,6 +79,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		stravaRouteId = null;
+		rideWithGpsRouteId = null;
 		rideDate = '';
 		isProcessing = true;
 		try {
@@ -106,6 +112,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		stravaRouteId = null;
+		rideWithGpsRouteId = null;
 		rideDate = '';
 		isProcessing = true;
 		try {
@@ -127,10 +134,55 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 			affected = null;
 			busOnly = null;
 			stravaRouteId = null;
+			rideWithGpsRouteId = null;
 			rideDate = '';
 			return;
 		}
 		await loadStravaRouteId(parsed.routeId, accessToken);
+	}
+
+	async function loadRideWithGpsRouteId(routeId: string): Promise<void> {
+		error = null;
+		track = null;
+		affected = null;
+		busOnly = null;
+		stravaRouteId = null;
+		rideWithGpsRouteId = null;
+		rideDate = '';
+		isProcessing = true;
+		try {
+			// Proxied through our server: the OAuth token lives in an httpOnly cookie.
+			const res = await fetch(`/api/ridewithgps/routes/${encodeURIComponent(routeId)}`);
+			if (!res.ok) {
+				const body = (await res.json().catch(() => null)) as { message?: string } | null;
+				error = body?.message ?? m.error_failed_load_rwgps();
+				// The server dropped a rejected token; reload so the menu asks to reconnect.
+				if (res.status === 401) await invalidateAll();
+				return;
+			}
+			const data = (await res.json()) as { name?: string; coordinates: [number, number][] };
+			await checkTrack({ name: data.name, coordinates: data.coordinates });
+			rideWithGpsRouteId = routeId;
+		} catch (err) {
+			error = err instanceof Error ? err.message : m.error_failed_load_rwgps();
+		} finally {
+			isProcessing = false;
+		}
+	}
+
+	async function loadRideWithGps(url: string): Promise<void> {
+		const parsed = parseRideWithGpsUrl(url);
+		if (!parsed) {
+			error = m.error_invalid_rwgps_url();
+			track = null;
+			affected = null;
+			busOnly = null;
+			stravaRouteId = null;
+			rideWithGpsRouteId = null;
+			rideDate = '';
+			return;
+		}
+		await loadRideWithGpsRouteId(parsed.routeId);
 	}
 
 	function clear(): void {
@@ -138,6 +190,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		affected = null;
 		busOnly = null;
 		stravaRouteId = null;
+		rideWithGpsRouteId = null;
 		rideDate = '';
 		error = null;
 	}
@@ -158,6 +211,9 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		get stravaRouteId() {
 			return stravaRouteId;
 		},
+		get rideWithGpsRouteId() {
+			return rideWithGpsRouteId;
+		},
 		get isProcessing() {
 			return isProcessing;
 		},
@@ -175,6 +231,8 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		loadKomoot,
 		loadStrava,
 		loadStravaRouteId,
+		loadRideWithGps,
+		loadRideWithGpsRouteId,
 		clear
 	};
 }

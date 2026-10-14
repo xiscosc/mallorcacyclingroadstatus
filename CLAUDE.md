@@ -57,6 +57,8 @@ Two entry points feed a single reactive checker (`src/lib/route-check.svelte.ts`
 
 - **GPX**: parsed entirely client-side in `src/lib/gpx.ts` via `@tmcw/togeojson` + DOMParser.
 - **Komoot URL**: posted to the SvelteKit form action `?/komoot` in `+page.server.ts`. Komoot's API is CORS-blocked from browsers, so the fetch must run server-side. The action is gated by Cloudflare Turnstile (`verifyTurnstile`) — the client widget posts a token alongside the URL.
+- **Strava**: OAuth (`/auth/strava`), then the browser fetches the route GPX straight from Strava's API (CORS-enabled) with the token.
+- **Ride with GPS**: OAuth (`/auth/ridewithgps`, `src/lib/server/ridewithgps.ts`). Unlike Strava, the token never reaches the client: it lives in the httpOnly `rwgps_token` cookie and the browser calls our proxies `/api/ridewithgps/routes` (the user's own routes — the API doesn't list saved/pinned routes of others) and `/api/ridewithgps/routes/[id]` (any route the user may view, returned as `[lng, lat]` coordinates). The token exchange is hand-rolled because RWGPS takes a JSON body and returns no `expires_in`/refresh token; the cookie lives 30 days and a 401 from RWGPS deletes it. `/auth/ridewithgps/disconnect` revokes the token. The menu entry only shows when `RWGPS_CLIENT_ID` and `RWGPS_CLIENT_SECRET` are both set.
 
 `findAffectedIncidents` (in `gpx.ts`) does a bbox prefilter (with a meters→degrees pad) before per-track-point distance checks against each incident line via `@turf/point-to-line-distance`. Incidents with no line geometry fall back to measuring their `location` against the track _line_ — not against its vertices, which sit tens of meters apart and would let a route pass straight over a marker unflagged. Default tolerance 25 m. The loop yields to the event loop every 10 incidents to keep the spinner painting.
 
@@ -71,7 +73,7 @@ Two entry points feed a single reactive checker (`src/lib/route-check.svelte.ts`
 
 ### Static pages
 
-`src/routes/support/+page.svelte` is the public support / contact page (linked from the homepage footer and required by Strava's API terms). It documents the contact email and the project's data-handling stance: GPX is parsed client-side, Komoot URLs are fetched server-side without persistence, and Strava OAuth tokens live only in httpOnly cookies on the user's browser. Keep that page in sync with any change to how user-supplied data is handled. Cross-route links must use `resolve()` from `$app/paths` (the `svelte/no-navigation-without-resolve` lint rule is enforced).
+`src/routes/support/+page.svelte` is the public support / contact page (linked from the homepage footer and required by Strava's API terms). It documents the contact email and the project's data-handling stance: GPX is parsed client-side, Komoot URLs are fetched server-side without persistence, and Strava / Ride with GPS OAuth tokens live only in httpOnly cookies on the user's browser. Keep that page in sync with any change to how user-supplied data is handled. Cross-route links must use `resolve()` from `$app/paths` (the `svelte/no-navigation-without-resolve` lint rule is enforced).
 
 ### Internationalization (Paraglide)
 

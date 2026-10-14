@@ -36,3 +36,6 @@ TURNSTILE_SITE_KEY="0x4AAAAAADCnu_c4A7KUyEUg"
 # STRAVA_CLIENT_ID is public (it's part of the OAuth authorize URL).
 # STRAVA_CLIENT_SECRET is set via `wrangler secret put STRAVA_CLIENT_SECRET`.
 STRAVA_CLIENT_ID="232879"
+# RWGPS_CLIENT_ID is public too (sent in the authorize URL).
+# RWGPS_CLIENT_SECRET is set via `wrangler secret put RWGPS_CLIENT_SECRET`.
+RWGPS_CLIENT_ID=""

@@ -157,6 +157,18 @@
 					<ExternalLink class="size-3" />
 				</a>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{:else if checker.rideWithGpsRouteId}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external link to Ride with GPS -->
+				<a
+					href="https://ridewithgps.com/routes/{checker.rideWithGpsRouteId}"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-1 text-xs font-bold underline underline-offset-2"
+				>
+					{m.banner_view_on_rwgps()}
+					<ExternalLink class="size-3" />
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 		</Alert.Description>
 

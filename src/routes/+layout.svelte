@@ -67,7 +67,8 @@
 					'Live Mallorca road closures map',
 					'GPX route upload',
 					'Komoot route URL check',
-					'Strava route check'
+					'Strava route check',
+					'Ride with GPS route check'
 				],
 				about: {
 					'@type': 'Place',

@@ -161,6 +161,8 @@
 				turnstileSiteKey={data.turnstileSiteKey}
 				stravaToken={data.stravaToken}
 				stravaAthleteId={data.stravaAthleteId}
+				rideWithGpsEnabled={data.rideWithGpsEnabled}
+				rideWithGpsConnected={data.rideWithGpsConnected}
 				buttonClass="w-full justify-center sm:w-auto"
 			/>
 		</div>

@@ -12,3 +12,9 @@ TURNSTILE_SECRET=
 # `mallorcacyclingroads.cc` for prod.
 STRAVA_CLIENT_ID=
 STRAVA_CLIENT_SECRET=
+# Ride with GPS OAuth app credentials. Create an API client at
+# https://ridewithgps.com/settings/developers and add the redirect URIs
+# `http://localhost:5173/auth/ridewithgps/callback` (dev) and
+# `https://mallorcacyclingroads.cc/auth/ridewithgps/callback` (prod).
+RWGPS_CLIENT_ID=
+RWGPS_CLIENT_SECRET=

@@ -34,6 +34,8 @@ declare global {
 				TURNSTILE_SECRET: string;
 				STRAVA_CLIENT_ID: string;
 				STRAVA_CLIENT_SECRET: string;
+				RWGPS_CLIENT_ID: string;
+				RWGPS_CLIENT_SECRET: string;
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };

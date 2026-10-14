@@ -202,6 +202,10 @@
 						>{m.support_privacy_strava_link()}</a
 					>.
 				</li>
+				<li>
+					<span class="font-medium text-foreground">{m.support_privacy_rwgps_strong()}</span>
+					{m.support_privacy_rwgps_rest()}
+				</li>
 			</ul>
 			<p>
 				{m.support_privacy_outro_intro()}

@@ -1,5 +1,6 @@
 import { readIncidents } from '$lib/server/incidents-store';
 import { fetchKomootTour, parseKomootUrl } from '$lib/server/komoot';
+import { RWGPS_TOKEN_COOKIE, isRideWithGpsConfigured } from '$lib/server/ridewithgps';
 import { STRAVA_ATHLETE_ID_COOKIE, STRAVA_TOKEN_COOKIE } from '$lib/server/strava-oauth';
 import { verifyTurnstile } from '$lib/server/turnstile';
 import { fail } from '@sveltejs/kit';
@@ -21,7 +22,10 @@ export const load: PageServerLoad = async ({ platform, cookies }) => {
 		...incidents,
 		turnstileSiteKey: platform?.env.TURNSTILE_SITE_KEY ?? '',
 		stravaToken,
-		stravaAthleteId
+		stravaAthleteId,
+		// The Ride with GPS token never leaves the server; the client only needs to know it exists.
+		rideWithGpsEnabled: isRideWithGpsConfigured(platform?.env),
+		rideWithGpsConnected: !!cookies.get(RWGPS_TOKEN_COOKIE)
 	};
 };
 

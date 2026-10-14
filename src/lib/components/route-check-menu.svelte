@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { invalidateAll } from '$app/navigation';
 	import type { RouteChecker } from '$lib/route-check.svelte';
 	import { fetchStravaRoutes, type StravaRouteSummary } from '$lib/strava';
+	import type { RideWithGpsRouteSummary } from '$lib/ridewithgps';
 	import { m } from '$lib/paraglide/messages';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -21,18 +23,23 @@
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import Star from '@lucide/svelte/icons/star';
 	import Lock from '@lucide/svelte/icons/lock';
+	import Bike from '@lucide/svelte/icons/bike';
 
 	let {
 		checker,
 		turnstileSiteKey,
 		stravaToken,
 		stravaAthleteId,
+		rideWithGpsEnabled,
+		rideWithGpsConnected,
 		buttonClass
 	}: {
 		checker: RouteChecker;
 		turnstileSiteKey: string;
 		stravaToken: string | null;
 		stravaAthleteId: string | null;
+		rideWithGpsEnabled: boolean;
+		rideWithGpsConnected: boolean;
 		buttonClass?: string;
 	} = $props();
 
@@ -45,6 +52,13 @@
 	let stravaRoutesLoaded = $state(false);
 	let stravaRoutesLoading = $state(false);
 	let stravaRoutesError = $state<string | null>(null);
+	let rwgpsOpen = $state(false);
+	let rwgpsUrl = $state('');
+	let rwgpsRoutes = $state<RideWithGpsRouteSummary[]>([]);
+	let rwgpsRoutesLoaded = $state(false);
+	let rwgpsRoutesLoading = $state(false);
+	let rwgpsRoutesError = $state<string | null>(null);
+	let rwgpsDisconnecting = $state(false);
 	let turnstileToken = $state('');
 	let turnstileContainer: HTMLDivElement | null = $state(null);
 	let widgetId: string | undefined;
@@ -80,6 +94,61 @@
 		const token = stravaToken;
 		stravaOpen = false;
 		await checker.loadStravaRouteId(routeId, token);
+	}
+
+	$effect(() => {
+		if (rwgpsOpen && rideWithGpsConnected && !rwgpsRoutesLoaded && !rwgpsRoutesLoading) {
+			loadRwgpsRoutes();
+		}
+	});
+
+	async function loadRwgpsRoutes() {
+		rwgpsRoutesLoading = true;
+		rwgpsRoutesError = null;
+		try {
+			// Proxied through our server: the OAuth token lives in an httpOnly cookie.
+			const res = await fetch('/api/ridewithgps/routes');
+			if (!res.ok) {
+				const body = (await res.json().catch(() => null)) as { message?: string } | null;
+				rwgpsRoutesError = body?.message ?? m.error_failed_load_rwgps();
+				// The server dropped a rejected token; reload so the dialog offers to reconnect.
+				if (res.status === 401) await invalidateAll();
+				return;
+			}
+			rwgpsRoutes = (await res.json()) as RideWithGpsRouteSummary[];
+			rwgpsRoutesLoaded = true;
+		} catch (err) {
+			rwgpsRoutesError = err instanceof Error ? err.message : m.error_failed_load_rwgps();
+		} finally {
+			rwgpsRoutesLoading = false;
+		}
+	}
+
+	async function selectRwgpsRoute(routeId: string) {
+		rwgpsOpen = false;
+		await checker.loadRideWithGpsRouteId(routeId);
+	}
+
+	async function submitRwgps(e: SubmitEvent) {
+		e.preventDefault();
+		const url = rwgpsUrl.trim();
+		if (!url) return;
+		rwgpsOpen = false;
+		rwgpsUrl = '';
+		await checker.loadRideWithGps(url);
+	}
+
+	async function disconnectRwgps() {
+		rwgpsDisconnecting = true;
+		try {
+			await fetch('/auth/ridewithgps/disconnect', { method: 'POST' });
+			rwgpsRoutes = [];
+			rwgpsRoutesLoaded = false;
+			rwgpsRoutesError = null;
+			await invalidateAll();
+		} finally {
+			rwgpsDisconnecting = false;
+		}
 	}
 
 	function fmtKm(meters: number): string {
@@ -205,6 +274,12 @@
 			<Icon icon="simple-icons:strava" width="16" height="16" style="color: #fc4c02" />
 			<span>{m.check_menu_strava()}</span>
 		</DropdownMenu.Item>
+		{#if rideWithGpsEnabled}
+			<DropdownMenu.Item onSelect={() => (rwgpsOpen = true)}>
+				<Bike />
+				<span>{m.check_menu_rwgps()}</span>
+			</DropdownMenu.Item>
+		{/if}
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
 
@@ -373,6 +448,140 @@
 				<p class="text-center text-xs text-muted-foreground">{m.strava_dialog_gpx_hint()}</p>
 				<Dialog.Footer class="items-center sm:justify-between">
 					<PoweredByStrava />
+					<Dialog.Close>
+						{#snippet child({ props })}
+							<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
+						{/snippet}
+					</Dialog.Close>
+				</Dialog.Footer>
+			</div>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={rwgpsOpen}>
+	<Dialog.Content class="sm:max-w-lg">
+		<Dialog.Header>
+			<Dialog.Title class="flex items-center gap-2">
+				<Bike class="size-5" />
+				{m.rwgps_dialog_title()}
+			</Dialog.Title>
+			<Dialog.Description>
+				{#if rideWithGpsConnected}
+					{m.rwgps_dialog_description_connected()}
+				{:else}
+					{m.rwgps_dialog_description_disconnected()}
+				{/if}
+			</Dialog.Description>
+		</Dialog.Header>
+		{#if rideWithGpsConnected}
+			<div class="flex flex-col gap-4">
+				<div class="flex flex-col gap-2">
+					<div class="flex items-center justify-between">
+						<Label>{m.strava_dialog_routes_label()}</Label>
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={loadRwgpsRoutes}
+							disabled={rwgpsRoutesLoading}
+							aria-label={m.strava_dialog_refresh_routes()}
+							class="h-7 px-2"
+						>
+							<RefreshCw class="size-3.5 {rwgpsRoutesLoading ? 'animate-spin' : ''}" />
+						</Button>
+					</div>
+					{#if rwgpsRoutesError}
+						<p class="text-xs text-destructive">{rwgpsRoutesError}</p>
+					{:else if rwgpsRoutesLoading && !rwgpsRoutesLoaded}
+						<div class="flex flex-col gap-2">
+							{#each [0, 1, 2, 3] as i (i)}
+								<Skeleton class="h-12 w-full" />
+							{/each}
+						</div>
+					{:else if rwgpsRoutesLoaded && rwgpsRoutes.length === 0}
+						<p class="text-xs text-muted-foreground">{m.rwgps_dialog_no_routes()}</p>
+					{:else if rwgpsRoutes.length > 0}
+						<ScrollArea class="h-64 rounded-md border">
+							<ul class="flex flex-col">
+								{#each rwgpsRoutes as route, i (route.id)}
+									{#if i > 0}
+										<Separator />
+									{/if}
+									<li>
+										<button
+											type="button"
+											onclick={() => selectRwgpsRoute(route.id)}
+											class="flex w-full flex-col gap-1 px-3 py-2 text-left transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+										>
+											<div class="flex items-center gap-2">
+												<span class="truncate text-sm font-medium">{route.name}</span>
+												{#if route.private}
+													<Lock class="size-3 shrink-0 text-muted-foreground" />
+												{/if}
+											</div>
+											<div
+												class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
+											>
+												<span>{fmtKm(route.distance)}</span>
+												{#if route.elevationGain > 0}
+													<span>· ↑ {fmtMeters(route.elevationGain)}</span>
+												{/if}
+											</div>
+										</button>
+									</li>
+								{/each}
+							</ul>
+						</ScrollArea>
+					{/if}
+				</div>
+
+				<div class="flex items-center gap-3">
+					<Separator class="flex-1" />
+					<span class="text-xs text-muted-foreground">{m.strava_dialog_or_paste_url()}</span>
+					<Separator class="flex-1" />
+				</div>
+
+				<form onsubmit={submitRwgps} class="flex flex-col gap-4">
+					<div class="flex flex-col gap-2">
+						<Label for="rwgps-url">{m.strava_dialog_url_label()}</Label>
+						<Input
+							id="rwgps-url"
+							type="url"
+							bind:value={rwgpsUrl}
+							placeholder="https://ridewithgps.com/routes/…"
+							autocomplete="off"
+						/>
+					</div>
+					<Dialog.Footer class="items-center sm:justify-between">
+						<Button
+							type="button"
+							variant="link"
+							size="sm"
+							onclick={disconnectRwgps}
+							disabled={rwgpsDisconnecting}
+							class="px-0 text-muted-foreground"
+						>
+							{m.rwgps_dialog_disconnect()}
+						</Button>
+						<div class="flex gap-2">
+							<Dialog.Close>
+								{#snippet child({ props })}
+									<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
+								{/snippet}
+							</Dialog.Close>
+							<Button type="submit" disabled={!rwgpsUrl.trim()}>{m.strava_dialog_submit()}</Button>
+						</div>
+					</Dialog.Footer>
+				</form>
+			</div>
+		{:else}
+			<div class="flex flex-col gap-4">
+				<Button href={resolve('/auth/ridewithgps')} size="lg" class="self-center">
+					<Bike class="size-4" />
+					{m.rwgps_dialog_connect()}
+				</Button>
+				<p class="text-center text-xs text-muted-foreground">{m.rwgps_dialog_gpx_hint()}</p>
+				<Dialog.Footer>
 					<Dialog.Close>
 						{#snippet child({ props })}
 							<Button {...props} variant="ghost">{m.dialog_cancel()}</Button>
