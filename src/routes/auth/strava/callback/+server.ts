@@ -59,5 +59,6 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 		cookies.set(STRAVA_ATHLETE_ID_COOKIE, String(athleteId), cookieOpts);
 	}
 
-	redirect(302, '/');
+	// Lets the page reopen the Strava dialog the athlete left from.
+	redirect(302, '/?strava=connected');
 };
