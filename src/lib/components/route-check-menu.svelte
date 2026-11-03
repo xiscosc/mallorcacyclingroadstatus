@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import type { RouteChecker } from '$lib/route-check.svelte';
 	import { fetchStravaRoutes, type StravaRouteSummary } from '$lib/strava';
 	import { m } from '$lib/paraglide/messages';
@@ -39,7 +41,8 @@
 	let fileInput: HTMLInputElement;
 	let komootOpen = $state(false);
 	let komootUrl = $state('');
-	let stravaOpen = $state(false);
+	// The OAuth callback lands on `?strava=connected`: reopen the dialog the athlete left from.
+	let stravaOpen = $state(page.url.searchParams.has('strava'));
 	let stravaUrl = $state('');
 	let stravaRoutes = $state<StravaRouteSummary[]>([]);
 	let stravaRoutesLoaded = $state(false);
@@ -48,6 +51,16 @@
 	let turnstileToken = $state('');
 	let turnstileContainer: HTMLDivElement | null = $state(null);
 	let widgetId: string | undefined;
+
+	// Drop the flag once the dialog closes so a reload or shared link doesn't reopen it.
+	// Not on mount: replaceState throws until SvelteKit's router has started.
+	$effect(() => {
+		if (stravaOpen || !page.url.searchParams.has('strava')) return;
+		const url = new URL(page.url);
+		url.searchParams.delete('strava');
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same page, only drops the flag
+		replaceState(url, page.state);
+	});
 
 	$effect(() => {
 		if (
