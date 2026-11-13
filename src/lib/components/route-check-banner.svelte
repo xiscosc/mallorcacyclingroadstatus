@@ -51,7 +51,12 @@
 
 	type Window = Pick<
 		Incident,
-		'startDate' | 'endDate' | 'isClosed' | 'hasTrafficCuts' | 'onlyClosedOnWeekDays'
+		| 'startDate'
+		| 'endDate'
+		| 'isClosed'
+		| 'isRestricted'
+		| 'hasTrafficCuts'
+		| 'onlyClosedOnWeekDays'
 	> & { status: string; roads: string[] };
 	type EventGroup = { key: string; note?: Note; windows: Window[]; sameStatus: boolean };
 
@@ -67,7 +72,7 @@
 				group = { note: inc.noteId ? notes[inc.noteId] : undefined, windows: new Map() };
 				byEvent.set(key, group);
 			}
-			const status = `${inc.isClosed}|${inc.hasTrafficCuts}|${inc.onlyClosedOnWeekDays}`;
+			const status = `${inc.isClosed}|${inc.isRestricted}|${inc.hasTrafficCuts}|${inc.onlyClosedOnWeekDays}`;
 			const windowKey = `${inc.startDate?.getTime()}|${inc.endDate?.getTime()}|${status}`;
 			const window = group.windows.get(windowKey);
 			if (!window) group.windows.set(windowKey, { ...inc, status, roads: [inc.roadName] });
@@ -94,6 +99,8 @@
 {#snippet statusBadges(w: Window)}
 	{#if w.isClosed}
 		<Badge variant="destructive">{m.badge_closed()}</Badge>
+	{:else if w.isRestricted}
+		<Badge variant="secondary">{m.badge_restricted()}</Badge>
 	{:else if w.hasTrafficCuts}
 		<Badge variant="secondary">{m.badge_traffic_cuts()}</Badge>
 	{/if}

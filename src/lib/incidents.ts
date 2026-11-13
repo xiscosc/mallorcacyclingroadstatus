@@ -26,6 +26,8 @@ export type Incident = {
 	 * up, so these are worth surfacing even though `isClosed` is false.
 	 */
 	hasTrafficCuts: boolean;
+	/** The road is open only to some users (e.g. residents), so a rider passing through can't use it. */
+	isRestricted: boolean;
 	/** True when the restriction applies only on working days (not weekends/holidays). */
 	onlyClosedOnWeekDays: boolean;
 	/** Category of the incident. */
@@ -80,10 +82,10 @@ export type LoadOptions = {
 };
 
 /**
- * Whether an incident is worth putting in front of a rider: the road is shut or the
- * traffic is being cut. Everything else the sources publish (roadworks with no restriction, narrowed lanes, "take
+ * Whether an incident is worth putting in front of a rider: the road is shut, access
+ * is restricted or the traffic is being cut. Everything else the sources publish (roadworks with no restriction, narrowed lanes, "take
  * care" notices) is noise on a bike and is dropped by the cron.
  */
 export function affectsRiders(incident: Incident): boolean {
-	return incident.isClosed || incident.hasTrafficCuts;
+	return incident.isClosed || incident.isRestricted || incident.hasTrafficCuts;
 }
