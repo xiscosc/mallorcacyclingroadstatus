@@ -6,6 +6,11 @@ import type { Incident } from '$lib/incidents';
 import { m } from '$lib/paraglide/messages';
 import { DateTime } from 'luxon';
 
+// Mallorca (incl. Cabrera) padded by ~100 km: loose on purpose, it only rejects routes elsewhere.
+const AREA = { west: 1.09, east: 4.68, south: 38.23, north: 40.87 };
+const inArea = ([lng, lat]: [number, number]) =>
+	lng >= AREA.west && lng <= AREA.east && lat >= AREA.south && lat <= AREA.north;
+
 /**
  * Reactive checker that takes a GPX file (soon: also a remote tour URL),
  * parses it, and flags incidents that intersect the track. Expose the returned
@@ -24,7 +29,6 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 
 	const affectedIds = $derived(
 		// Rebuilt by `$derived` on every change and never mutated, so a plain Set is enough.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		new Set([...(affected?.map((i) => i.id) ?? []), ...(busOnly?.map((i) => i.id) ?? [])])
 	);
 
@@ -40,6 +44,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 	};
 
 	async function checkTrack(parsed: ParsedGpx): Promise<void> {
+		if (!parsed.coordinates.every(inArea)) throw new Error(m.error_route_outside_mallorca());
 		// Yield once so the loader paints before we start the distance math.
 		await new Promise((r) => setTimeout(r, 0));
 		const hits = await findAffectedIncidents(parsed, getIncidents());

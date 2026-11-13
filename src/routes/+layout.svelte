@@ -122,7 +122,6 @@
 	<meta name="twitter:image" content={OG_IMAGE.url} />
 	<meta name="twitter:image:alt" content={SITE_NAME} />
 
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html jsonLdScript}
 </svelte:head>
 <div

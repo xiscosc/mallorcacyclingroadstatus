@@ -68,6 +68,7 @@
 	"strava_dialog_connect": "Connect with Strava",
 	"strava_dialog_gpx_hint": "Can't connect? On Strava, open the route, choose Export GPX, then use “Upload GPX file” here.",
 	"error_failed_parse_gpx": "Failed to parse GPX",
+	"error_route_outside_mallorca": "This route isn't in Mallorca",
 	"error_komoot_request_failed": "Komoot request failed",
 	"error_unexpected_response": "Unexpected response from server",
 	"error_failed_load_komoot": "Failed to load Komoot tour",

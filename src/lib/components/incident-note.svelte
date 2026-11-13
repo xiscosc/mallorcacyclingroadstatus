@@ -12,7 +12,6 @@
 {#if note}
 	<div class={['flex flex-col gap-0.5', className]}>
 		{#if note.url}
-			<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL from the feed -->
 			<a
 				href={note.url}
 				target="_blank"
@@ -22,7 +21,6 @@
 				{note.eventName ?? m.more_info()}
 				<ExternalLink class="size-[1em] shrink-0" />
 			</a>
-			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{:else if note.eventName}
 			<span class="font-semibold">{note.eventName}</span>
 		{/if}
