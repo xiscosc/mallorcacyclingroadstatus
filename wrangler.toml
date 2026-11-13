@@ -7,9 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 main = "src/worker.ts"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 
-routes = [
-	{ pattern = "mallorcacyclingroads.cc", custom_domain = true }
-]
+routes = [{ pattern = "mallorcacyclingroads.cc", custom_domain = true }]
 
 # Runs at minute 0 of every 6th hour (UTC).
 [triggers]
@@ -32,7 +30,7 @@ invocation_logs = true
 enabled = false
 
 [vars]
-TURNSTILE_SITE_KEY="0x4AAAAAADCnu_c4A7KUyEUg"
+TURNSTILE_SITE_KEY = "0x4AAAAAADCnu_c4A7KUyEUg"
 # STRAVA_CLIENT_ID is public (it's part of the OAuth authorize URL).
 # STRAVA_CLIENT_SECRET is set via `wrangler secret put STRAVA_CLIENT_SECRET`.
-STRAVA_CLIENT_ID="232879"
+STRAVA_CLIENT_ID = "232879"

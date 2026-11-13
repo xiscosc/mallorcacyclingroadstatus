@@ -58,7 +58,7 @@
 	// One card per event (shared note), one row per time window listing its roads: an event
 	// spanning several roads and days otherwise repeats the same card once per road stretch.
 	const groups = $derived.by(() => {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local scratch map, rebuilt on every run
+		// Local scratch map, rebuilt on every run.
 		const byEvent = new Map<string, { note?: Note; windows: Map<string, Window> }>();
 		for (const inc of affected) {
 			const key = inc.noteId ?? inc.id;
@@ -146,7 +146,6 @@
 			<span class="opacity-80">{checker.track.name ?? m.banner_route_unnamed()}</span>
 			{#if checker.stravaRouteId}
 				<!-- Strava's guidelines require a link back to the source, with this exact (untranslated) text. -->
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- external link to Strava -->
 				<a
 					href="https://www.strava.com/routes/{checker.stravaRouteId}"
 					target="_blank"
@@ -156,7 +155,6 @@
 					View on Strava
 					<ExternalLink class="size-3" />
 				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 		</Alert.Description>
 
@@ -213,7 +211,6 @@
 									<p class="font-semibold">{summary}</p>
 								{/if}
 								{#if group.note?.url}
-									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL from the feed -->
 									<a
 										href={group.note.url}
 										target="_blank"
@@ -223,7 +220,6 @@
 										<span class="line-clamp-2">{group.note.eventName ?? m.more_info()}</span>
 										<ExternalLink class="size-3 shrink-0" />
 									</a>
-									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{:else if group.note?.eventName}
 									<span class="text-xs text-muted-foreground">{group.note.eventName}</span>
 								{/if}

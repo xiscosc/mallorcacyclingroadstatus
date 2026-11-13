@@ -68,6 +68,7 @@
 	"strava_dialog_connect": "Mit Strava verbinden",
 	"strava_dialog_gpx_hint": "Verbindung nicht möglich? Öffne die Route auf Strava, wähle „GPX exportieren“ und nutze hier „GPX-Datei hochladen“.",
 	"error_failed_parse_gpx": "GPX-Datei konnte nicht gelesen werden",
+	"error_route_outside_mallorca": "Diese Route liegt nicht auf Mallorca",
 	"error_komoot_request_failed": "Komoot-Anfrage fehlgeschlagen",
 	"error_unexpected_response": "Unerwartete Antwort vom Server",
 	"error_failed_load_komoot": "Komoot-Tour konnte nicht geladen werden",

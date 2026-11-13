@@ -68,6 +68,7 @@
 	"strava_dialog_connect": "Connectar amb Strava",
 	"strava_dialog_gpx_hint": "No et pots connectar? A Strava, obre la ruta, tria Exportar GPX i fes servir aquí «Pujar fitxer GPX».",
 	"error_failed_parse_gpx": "No s'ha pogut llegir el GPX",
+	"error_route_outside_mallorca": "Aquesta ruta no és a Mallorca",
 	"error_komoot_request_failed": "La sol·licitud a Komoot ha fallat",
 	"error_unexpected_response": "Resposta inesperada del servidor",
 	"error_failed_load_komoot": "No s'ha pogut carregar el tour de Komoot",

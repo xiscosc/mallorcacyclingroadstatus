@@ -46,8 +46,8 @@ Always-passing Turnstile test keys are documented [here](https://developers.clou
 - `bun run build` — production build into `.svelte-kit/cloudflare/`
 - `bun run preview` — preview the production build
 - `bun run check` — `svelte-kit sync` + `svelte-check` (TypeScript + Svelte diagnostics)
-- `bun run lint` — `prettier --check` + `eslint`
-- `bun run format` — `prettier --write`
+- `bun run lint` — `oxfmt --check` + `oxlint`
+- `bun run format` — `oxfmt`
 
 There is no test suite.
 

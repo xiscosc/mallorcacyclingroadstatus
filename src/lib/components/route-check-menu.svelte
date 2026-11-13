@@ -58,7 +58,6 @@
 		if (stravaOpen || !page.url.searchParams.has('strava')) return;
 		const url = new URL(page.url);
 		url.searchParams.delete('strava');
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same page, only drops the flag
 		replaceState(url, page.state);
 	});
 

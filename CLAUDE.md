@@ -15,8 +15,8 @@ Package manager is **Bun** (`bun.lock`, `.npmrc` enforces `engine-strict=true`).
 - `bun run build` — `vite build` (produces `.svelte-kit/cloudflare/` consumed by `src/worker.ts`)
 - `bun run preview` — preview the production build
 - `bun run check` — `svelte-kit sync && svelte-check` (TypeScript + Svelte diagnostics)
-- `bun run lint` — `prettier --check . && eslint .`
-- `bun run format` — `prettier --write .`
+- `bun run lint` — `oxfmt --check && oxlint` (Oxlint covers `.svelte` `<script>` blocks; shadcn `ui/` is ignored)
+- `bun run format` — `oxfmt` (`.svelte` via its bundled Prettier)
 
 There is **no test suite** in this repo.
 
@@ -67,15 +67,15 @@ Two entry points feed a single reactive checker (`src/lib/route-check.svelte.ts`
 - Components under `src/lib/components/ui/` are **shadcn-svelte** primitives — installed via the CLI (config in `components.json`, style `nova`, base color `neutral`, icons via `lucide`). When adding new ones, use the shadcn-svelte CLI rather than hand-rolling.
 - Map rendering uses **MapLibre GL** wrapped by Svelte components in `$lib/components/ui/map/` (`Map`, `MapRoute`, `MapMarker`, `MapControls`, popup/tooltip helpers). Theme syncs with the `theme` store and Tailwind's `dark`/`light` classes on `<html>`.
 - **Strava branding** follows https://developers.strava.com/guidelines/ (checked when Strava reviews the app to lift its 10-athlete cap): the official, unmodified assets live in `static/strava/` (Connect button at 48px; "Powered by Strava" via `powered-by-strava.svelte`, black/white by theme), and a Strava-sourced route shows a literal, untranslated **"View on Strava"** link (`checker.stravaRouteId`, set only by the Strava load path). Every Strava API call needs the visiting athlete's own OAuth token — the API Agreement (§2.3) forbids showing one user's Strava data to another, so never fetch routes with a shared/app token.
-- Tailwind v4 via `@tailwindcss/vite`; the stylesheet lives at `src/routes/layout.css` (also referenced by `prettier-plugin-tailwindcss` and `components.json`).
+- Tailwind v4 via `@tailwindcss/vite`; the stylesheet lives at `src/routes/layout.css` (also referenced by `sortTailwindcss.stylesheet` in `.oxfmtrc.json` and `components.json`).
 
 ### Static pages
 
-`src/routes/support/+page.svelte` is the public support / contact page (linked from the homepage footer and required by Strava's API terms). It documents the contact email and the project's data-handling stance: GPX is parsed client-side, Komoot URLs are fetched server-side without persistence, and Strava OAuth tokens live only in httpOnly cookies on the user's browser. Keep that page in sync with any change to how user-supplied data is handled. Cross-route links must use `resolve()` from `$app/paths` (the `svelte/no-navigation-without-resolve` lint rule is enforced).
+`src/routes/support/+page.svelte` is the public support / contact page (linked from the homepage footer and required by Strava's API terms). It documents the contact email and the project's data-handling stance: GPX is parsed client-side, Komoot URLs are fetched server-side without persistence, and Strava OAuth tokens live only in httpOnly cookies on the user's browser. Keep that page in sync with any change to how user-supplied data is handled. Cross-route links must use `resolve()` from `$app/paths` (convention only: Oxlint has no Svelte rules, so nothing enforces it).
 
 ### Internationalization (Paraglide)
 
-i18n is handled by **Paraglide JS** (`@inlang/paraglide-js`). Four locales: `en` (base), `de`, `es`, `ca`. Sources: `messages/<locale>.json` (each keyed identically); project config in `project.inlang/settings.json`; the Vite plugin compiles into `src/lib/paraglide/` (gitignored, also in `.prettierignore`).
+i18n is handled by **Paraglide JS** (`@inlang/paraglide-js`). Four locales: `en` (base), `de`, `es`, `ca`. Sources: `messages/<locale>.json` (each keyed identically); project config in `project.inlang/settings.json`; the Vite plugin compiles into `src/lib/paraglide/` (gitignored, also in the `ignorePatterns` of `.oxfmtrc.json` and `.oxlintrc.json`).
 
 - **Adding/changing strings**: edit every `messages/*.json` (keys must match across files), then `bun run dev` (vite plugin recompiles) or run `bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide` manually. Use `m.<key>()` from `$lib/paraglide/messages` in components; pass placeholders as `m.foo({ name: 'x' })`. There is no built-in pluralization helper — use `_one`/`_other` keys + a ternary in the call site (see `home_closures_one`/`_other` in `+page.svelte`).
 - **Locale resolution strategy** (`vite.config.ts`): `['cookie', 'preferredLanguage', 'url', 'baseLocale']`. Order matters — cookie wins so the language switcher is sticky, then browser `Accept-Language`, then URL prefix, then `en`. Paraglide's middleware (`src/hooks.server.ts`) issues a 307 to the localized URL when the resolved locale and the URL locale disagree (only on `Sec-Fetch-Dest: document` requests).
@@ -90,7 +90,7 @@ Standard SvelteKit: `$lib` → `src/lib`, `$app/*` from the runtime. `tsconfig.j
 
 ## Conventions
 
-- **Prettier**: tabs, single quotes, no trailing commas, 100-col print width, `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`. Always run `bun run format` before committing.
+- **Oxfmt** (`.oxfmtrc.json`): tabs, single quotes, no trailing commas, 100-col print width, Svelte support and Tailwind class sorting. **Oxlint** (`.oxlintrc.json`): `correctness` category as errors. Always run `bun run format` before committing.
 - **Dates/times**: use Luxon (`DateTime` from `luxon`) for parsing, formatting, and zone conversion in user-facing code. Display times in `Europe/Madrid` (e.g. `DateTime.fromISO(iso).setZone('Europe/Madrid').toFormat('dd LLL HH:mm')`). The Consell provider needs no date parsing — its feed carries epoch milliseconds.
 - **Platform bindings** are typed in `src/app.d.ts` under `App.Platform.env`; add new R2/var/secret bindings there _and_ in `wrangler.toml`.
 - New incident sources: implement `IncidentsProvider`, add to `buildProviders` in `cron.ts`, surface any new env vars in `app.d.ts`, `wrangler.toml`, `.dev.vars.example`, and the `CronEnv` type.
