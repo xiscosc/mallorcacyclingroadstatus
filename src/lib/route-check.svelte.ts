@@ -1,5 +1,6 @@
 import { deserialize } from '$app/forms';
 import { parseGpx, findAffectedIncidents, type ParsedGpx } from './gpx';
+import { densify, DENSIFY_M, type SharedRoute } from './share';
 import { fetchStravaRouteGpx, parseStravaUrl } from './strava';
 import { isBusOnlyClosure } from './cycling-roads';
 import type { Incident } from '$lib/incidents';
@@ -124,6 +125,31 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		}
 	}
 
+	/** A route from a share link; `null` when the link's params are malformed. */
+	async function loadShared(shared: SharedRoute | null): Promise<void> {
+		error = null;
+		track = null;
+		affected = null;
+		busOnly = null;
+		stravaRouteId = null;
+		rideDate = '';
+		if (!shared) {
+			error = m.error_invalid_share_link();
+			return;
+		}
+		isProcessing = true;
+		try {
+			// Share links carry a simplified route: refill it so the point-based check can't skip a closure.
+			const coordinates = densify(shared.coordinates, DENSIFY_M);
+			await checkTrack({ name: shared.name, coordinates });
+			rideDate = shared.date;
+		} catch (err) {
+			error = err instanceof Error ? err.message : m.error_invalid_share_link();
+		} finally {
+			isProcessing = false;
+		}
+	}
+
 	async function loadStrava(url: string, accessToken: string): Promise<void> {
 		const parsed = parseStravaUrl(url);
 		if (!parsed) {
@@ -180,6 +206,7 @@ export function createRouteChecker(getIncidents: () => Incident[]) {
 		loadKomoot,
 		loadStrava,
 		loadStravaRouteId,
+		loadShared,
 		clear
 	};
 }

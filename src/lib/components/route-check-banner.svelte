@@ -12,6 +12,9 @@
 	import X from '@lucide/svelte/icons/x';
 	import Plus from '@lucide/svelte/icons/plus';
 	import CalendarDays from '@lucide/svelte/icons/calendar-days';
+	import Share2 from '@lucide/svelte/icons/share-2';
+	import { page } from '$app/state';
+	import { shareParams } from '$lib/share';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { tick } from 'svelte';
@@ -19,7 +22,16 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import type { Incident, IncidentNote as Note } from '$lib/incidents';
 
-	let { checker, notes }: { checker: RouteChecker; notes: Record<string, Note> } = $props();
+	let {
+		checker,
+		notes,
+		snapshot
+	}: {
+		checker: RouteChecker;
+		notes: Record<string, Note>;
+		/** Picture of the map as shown, attached to the share when the target accepts files. */
+		snapshot?: () => Promise<Blob | null>;
+	} = $props();
 
 	const VISIBLE_EVENTS = 3;
 	let expanded = $state(false);
@@ -90,6 +102,33 @@
 			};
 		});
 	});
+	const statusText = $derived(
+		affected.length === 0
+			? m.banner_route_clear()
+			: groups.length === 1
+				? m.banner_route_incidents_one({ count: 1 })
+				: m.banner_route_incidents_other({ count: groups.length })
+	);
+
+	// The OS share sheet only: browsers without it (e.g. desktop Firefox) don't get the button.
+	const canShare = typeof navigator !== 'undefined' && 'share' in navigator;
+	async function share() {
+		if (!checker.track) return;
+		const title = checker.track.name ?? m.banner_route_unnamed();
+		const text = `${title}: ${statusText}`;
+		// Strava's API terms forbid showing one athlete's route to others, so those links point back to Strava.
+		const url = checker.stravaRouteId
+			? `https://www.strava.com/routes/${checker.stravaRouteId}`
+			: `${page.url.origin}${page.url.pathname}?${shareParams(checker.track, checker.rideDate)}`;
+		const data: ShareData = { title, text, url };
+		// Not for Strava routes: its API terms forbid showing an athlete's route to others.
+		const image = checker.stravaRouteId ? null : await snapshot?.();
+		const file = image && new File([image], 'route.jpg', { type: 'image/jpeg' });
+		if (file && navigator.canShare?.({ files: [file] })) data.files = [file];
+		// Rejects with AbortError when the user closes the share sheet: nothing to do.
+		await navigator.share(data).catch(() => {});
+	}
+
 	const visibleGroups = $derived(expanded ? groups : groups.slice(0, VISIBLE_EVENTS));
 
 	const uniqueRoadNames = (incidents: { roadName: string }[]) =>
@@ -162,6 +201,12 @@
 					View on Strava
 					<ExternalLink class="size-3" />
 				</a>
+			{/if}
+			{#if canShare}
+				<Button variant="outline" size="xs" onclick={share} class="text-foreground">
+					<Share2 />
+					{m.share_button()}
+				</Button>
 			{/if}
 		</Alert.Description>
 

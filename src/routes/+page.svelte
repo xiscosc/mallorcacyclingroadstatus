@@ -21,6 +21,10 @@
 	import { DateTime } from 'luxon';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { readShare } from '$lib/share';
+	import type MapLibreGL from 'maplibre-gl';
 	import { m } from '$lib/paraglide/messages';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
@@ -39,6 +43,67 @@
 
 	const checker = createRouteChecker(() => incidents);
 	const mapIncidents = $derived(incidents.filter(checker.onRideDate));
+
+	let map = $state<MapLibreGL.Map | null>(null);
+
+	/**
+	 * A picture of the route for sharing: fits the map to the route, waits for the tiles, then
+	 * copies the canvas with the basemap credit. Only canvas layers (basemap, route, closure lines)
+	 * are in it; HTML markers are not part of the canvas.
+	 */
+	function snapshotMap(): Promise<Blob | null> {
+		const current = map;
+		const route = checker.track?.coordinates;
+		if (!current || !route?.length) return Promise.resolve(null);
+		const capture = new Promise<Blob | null>((resolve) => {
+			const started = performance.now();
+			// Copy inside `render`: WebGL clears its buffer once the frame is shown. Not `idle`, which
+			// never fires while any source is still busy; tiles get 1.5 s, then the frame goes as is.
+			const onRender = () => {
+				if (!current.areTilesLoaded() && performance.now() - started < 1500) {
+					current.triggerRepaint();
+					return;
+				}
+				current.off('render', onRender);
+				const src = current.getCanvas();
+				const out = document.createElement('canvas');
+				out.width = src.width;
+				out.height = src.height;
+				const ctx = out.getContext('2d');
+				if (!ctx) return resolve(null);
+				ctx.drawImage(src, 0, 0);
+				const px = src.width / src.clientWidth;
+				const credit = '© CARTO © OpenStreetMap contributors';
+				ctx.font = `${11 * px}px system-ui, sans-serif`;
+				const w = ctx.measureText(credit).width + 12 * px;
+				ctx.fillStyle = 'rgba(255,255,255,0.8)';
+				ctx.fillRect(out.width - w, out.height - 18 * px, w, 18 * px);
+				ctx.fillStyle = '#333';
+				ctx.textAlign = 'right';
+				ctx.fillText(credit, out.width - 6 * px, out.height - 5 * px);
+				out.toBlob(resolve, 'image/jpeg', 0.85);
+			};
+			current.on('render', onRender);
+			const lngs = route.map((p) => p[0]);
+			const lats = route.map((p) => p[1]);
+			current.fitBounds(
+				[
+					[Math.min(...lngs), Math.min(...lats)],
+					[Math.max(...lngs), Math.max(...lats)]
+				],
+				{ padding: 80, maxZoom: 13, animate: false }
+			);
+			current.triggerRepaint();
+		});
+		// Slow tiles or a paused tab must not hold up the share: send the link alone after 2 s.
+		const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+		return Promise.race([capture, timeout]);
+	}
+
+	// A share link carries the route in its params: check it against today's incidents.
+	onMount(() => {
+		if (page.url.searchParams.has('r')) checker.loadShared(readShare(page.url.searchParams));
+	});
 
 	// Framed to show the whole island on both phone and desktop aspect ratios.
 	const initialZoom = browser && window.matchMedia('(max-width: 640px)').matches ? 8.3 : 9.2;
@@ -175,7 +240,7 @@
 		</div>
 	</section>
 
-	<RouteCheckBanner {checker} notes={data.notes} />
+	<RouteCheckBanner {checker} notes={data.notes} snapshot={snapshotMap} />
 
 	<Card
 		class="relative h-[60dvh] overflow-hidden p-0 shadow-lg ring-1 ring-border/70 sm:h-auto sm:min-h-[400px] sm:flex-1"
@@ -212,7 +277,7 @@
 				</span>
 			{/if}
 		</div>
-		<Map center={[2.9, 39.62]} zoom={initialZoom}>
+		<Map bind:map center={[2.9, 39.62]} zoom={initialZoom}>
 			{#if checker.track}
 				<MapRoute coordinates={checker.track.coordinates} color="#3b82f6" width={5} opacity={0.9} />
 			{/if}
