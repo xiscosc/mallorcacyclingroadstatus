@@ -113,6 +113,7 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 				endDate: this.parseEpoch(info.fin),
 				isClosed: this.isRoadClosed(info),
 				hasTrafficCuts: TRAFFIC_CUT.test(info.afeccio ?? ''),
+				isRestricted: this.isAccessRestricted(info),
 				onlyClosedOnWeekDays: /laborable/i.test(observacions),
 				type: TYPE_BY_CAUSA[info.causa ?? ''] ?? IncidentType.Other,
 				coordinates: paths.map((path) => path.map(lineToLngLat)),
@@ -141,6 +142,14 @@ export class ConsellDeMallorcaArcGisProvider extends IncidentsProvider {
 		return (
 			info.gravetat?.trim().toUpperCase() === 'TANCADA' ||
 			info.afeccio?.trim().toUpperCase() === 'TANCADA'
+		);
+	}
+
+	/** "Circulació restringida": open only to some users (e.g. residents). Not "Sense restriccions". */
+	private isAccessRestricted(info: IncidentAttributes): boolean {
+		return (
+			info.gravetat?.trim().toUpperCase() === 'CIRCULACIÓ AMB RESTRICCIONS' ||
+			info.afeccio?.trim().toUpperCase() === 'CIRCULACIÓ RESTRINGIDA'
 		);
 	}
 

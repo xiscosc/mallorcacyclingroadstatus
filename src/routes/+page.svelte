@@ -58,14 +58,23 @@
 	const CLOSED_COLOR = '#da272c';
 	const CUTS_COLOR = '#f3931a';
 	const BUS_ONLY_COLOR = '#319151';
+	const RESTRICTED_COLOR = '#8b5cf6';
 
 	const incidentColor = (incident: (typeof incidents)[number]) =>
-		isBusOnlyClosure(incident) ? BUS_ONLY_COLOR : incident.isClosed ? CLOSED_COLOR : CUTS_COLOR;
+		isBusOnlyClosure(incident)
+			? BUS_ONLY_COLOR
+			: incident.isClosed
+				? CLOSED_COLOR
+				: incident.isRestricted
+					? RESTRICTED_COLOR
+					: CUTS_COLOR;
 
 	const pageTitle = $derived(m.page_title());
 	const pageDescription = $derived(m.page_description());
 
 	const hasBusOnly = $derived(incidents.some(isBusOnlyClosure));
+	const hasRestricted = $derived(incidents.some((i) => i.isRestricted));
+	const hasCuts = $derived(incidents.some((i) => !i.isClosed && !i.isRestricted));
 	const closureCount = $derived(incidents.filter((i) => i.isClosed).length);
 	// Everything the cron kept that is not a full closure: traffic cuts.
 	const restrictionCount = $derived(incidents.length - closureCount);
@@ -178,7 +187,13 @@
 				<span class="size-2 rounded-full bg-[#da272c]"></span>
 				{m.legend_road_closed()}
 			</span>
-			{#if restrictionCount > 0}
+			{#if hasRestricted}
+				<span class="flex items-center gap-1.5">
+					<span class="size-2 rounded-full bg-[#8b5cf6]"></span>
+					{m.legend_road_restricted()}
+				</span>
+			{/if}
+			{#if hasCuts}
 				<span class="flex items-center gap-1.5">
 					<span class="size-2 rounded-full bg-[#f3931a]"></span>
 					{m.legend_road_cuts()}
@@ -237,6 +252,8 @@
 										<span class="text-[#319151]">· {m.tooltip_bus_only()}</span>
 									{:else if incident.isClosed}
 										<span class="text-[#da272c]">· {m.tooltip_closed()}</span>
+									{:else if incident.isRestricted}
+										<span class="text-[#8b5cf6]">· {m.tooltip_restricted()}</span>
 									{:else if incident.hasTrafficCuts}
 										<span class="text-[#f3931a]">· {m.tooltip_traffic_cuts()}</span>
 									{/if}
